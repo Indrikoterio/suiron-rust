@@ -390,7 +390,7 @@ mod test {
         let s2 = "----- Solution Node -----\n\
                   \tgoal: grandfather($X, $Y)\n\
                   \tparent_node: None\n\
-                  \tno_back_tracking: false\n\
+                  \tno_backtracking: false\n\
                   \trule_index: 0\n\
                   \tnumber_facts_rules: 2\n\
                   \thead_sn: None\n\
@@ -410,7 +410,7 @@ mod test {
         let s2 = "----- Solution Node -----\n\
                   \tgoal: father($X, $Z), father($Z, $Y)\n\
                   \tparent_node (goal only): grandfather($X, $Y)\n\
-                  \tno_back_tracking: false\n\
+                  \tno_backtracking: false\n\
                   \trule_index: 0\n\
                   \tnumber_facts_rules: 0\n\
                   \thead_sn (goal only): father($X, $Z)\n\
