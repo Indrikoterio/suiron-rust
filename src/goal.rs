@@ -205,7 +205,7 @@ impl Goal {
     /// }
     /// // Prints: father($X_1, $Z_2), mother($Z_2, $Y_3)
     /// ```
-    pub fn recreate_variables(&self, vars: &mut VarMap) -> Goal {
+    pub fn recreate_variables(self, vars: &mut VarMap) -> Goal {
 
         match self {
             Goal::OperatorGoal(op) => {
