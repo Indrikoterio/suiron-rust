@@ -414,12 +414,12 @@ impl Unifiable {
     /// // Should print:
     /// // mother($X_1, $Y_2) :- parent($X_1, $Y_2), female($X_1).
     /// ```
-    pub fn recreate_variables(&self, recreated_vars: &mut VarMap) -> Unifiable {
+    pub fn recreate_variables(self, recreated_vars: &mut VarMap) -> Unifiable {
 
         match self {
 
             Unifiable::LogicVar{id: _, name} => {
-                if let Some(id) = recreated_vars.get(name) {
+                if let Some(id) = recreated_vars.get(&name) {
                     Unifiable::LogicVar{id: *id, name: name.clone()}
                 }
                 else {
@@ -441,11 +441,11 @@ impl Unifiable {
                 let mut new_terms = vec![];
                 let mut vbar = false;  // vertical bar |
                 while let Unifiable::SLinkedList{term: t, next: n,
-                                     count: c, tail_var: tf} = &*this_list {
+                                     count: c, tail_var: tf} = this_list {
                     new_terms.push(t.recreate_variables(recreated_vars));
-                    if *c == 1 && *tf { vbar = true; }
-                    this_list = &*n;
-                    if *this_list == Unifiable::Nil { break; }
+                    if c == 1 && tf { vbar = true; }
+                    this_list = *n;
+                    if this_list == Unifiable::Nil { break; }
                 }
                 return make_linked_list(vbar, new_terms);
             },
@@ -547,7 +547,7 @@ impl Unifiable {
 /// * vars - previously recreated logic variables
 /// # Return
 /// * recreated goals
-pub fn recreate_vars_goals(goals: &Vec<Goal>, vars: &mut VarMap) -> Vec<Goal> {
+pub fn recreate_vars_goals(goals: Vec<Goal>, vars: &mut VarMap) -> Vec<Goal> {
     let mut new_goals: Vec<Goal> = vec![];
     for g in goals { new_goals.push(g.recreate_variables(vars)); }
     return new_goals;
@@ -560,7 +560,7 @@ pub fn recreate_vars_goals(goals: &Vec<Goal>, vars: &mut VarMap) -> Vec<Goal> {
 /// * vars - previously recreated logic variables
 /// # Return
 /// * recreated terms
-pub fn recreate_vars_terms(terms: &Vec<Unifiable>, vars: &mut VarMap) -> Vec<Unifiable> {
+pub fn recreate_vars_terms(terms: Vec<Unifiable>, vars: &mut VarMap) -> Vec<Unifiable> {
     let mut new_terms: Vec<Unifiable> = vec![];
     for t in terms { new_terms.push(t.recreate_variables(vars)); }
     return new_terms;
