@@ -458,14 +458,7 @@ impl Unifiable {
                 let name = name.clone();
                 return Unifiable::SFunction{name, terms: new_terms};
             },
-/* xxxxxxxxxxx
-            Unifiable::Atom(s) => { atom!(s) },
-            Unifiable::SInteger(i) => { SInteger(*i) },
-            Unifiable::SFloat(f) => { SFloat(*f) },
-            Unifiable::Anonymous => { Unifiable::Anonymous },
-            Unifiable::Nil => { Unifiable::Nil },
-*/
-            _ => { self.clone() }
+            _ => self,
 
         } // match
 
