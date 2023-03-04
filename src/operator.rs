@@ -98,7 +98,7 @@ impl Operator {
     /// let op2 = op.recreate_variables(&mut var_map);
     /// println!("{}", op2); // Prints: parent($X_1, $Y_2), female($X_1)
     /// ```
-    pub fn recreate_variables(&self, vars: &mut VarMap) -> Operator {
+    pub fn recreate_variables(self, vars: &mut VarMap) -> Operator {
         match self {
             Operator::And(goals) => {
                 Operator::And(recreate_vars_goals(goals, vars))
@@ -107,8 +107,7 @@ impl Operator {
                 Operator::Or(recreate_vars_goals(goals, vars))
             },
             Operator::Time(goals) => {
-                let goal = goals[0].recreate_variables(vars);
-                Operator::Time(vec![goal])
+                Operator::Time(recreate_vars_goals(goals, vars))
             },
         }
     }
