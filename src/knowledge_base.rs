@@ -121,7 +121,7 @@ pub fn get_rule(kb: &KnowledgeBase, predicate_name: &str, index: usize) -> Rule 
             if index >= rules.len() {  // Should never happen.
                 panic!("get_rule() - Index out of range: {}", index);
             }
-            let fact_or_rule = &rules[index];  // Can't fail.
+            let fact_or_rule = rules[index].clone();  // Can't fail.
             return fact_or_rule.recreate_variables(&mut VarMap::new());
         },
         None => {
