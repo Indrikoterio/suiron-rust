@@ -67,7 +67,7 @@ impl BuiltInPredicate {
     /// let new_print = print_predicate.recreate_variables(&mut var_map);
     /// println!("{}", new_print); // Prints: print($X_1, $Y_2)
     /// ```
-    pub fn recreate_variables(&self, vars: &mut VarMap) -> BuiltInPredicate {
+    pub fn recreate_variables(self, vars: &mut VarMap) -> BuiltInPredicate {
         match self {
             BuiltInPredicate::Print(terms) => {
                 let new_terms = recreate_vars_terms(terms, vars);
