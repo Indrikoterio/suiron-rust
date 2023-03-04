@@ -71,17 +71,10 @@ impl Goal {
 
         match self {
             Goal::ComplexGoal(cmplx) => {
-
-                let node = SolutionNode::new(goal, kb);
-                let rc_node = rc_cell!(node);
-                let mut mut_node = rc_node.borrow_mut();
-
-                mut_node.parent_solution = empty_ss!();
-
-                // Count the number of rules or facts which match the goal.
-                mut_node.number_facts_rules = count_rules(kb, &cmplx.key());
-
-                return Rc::clone(&rc_node);
+                let mut node = SolutionNode::new(goal, kb);
+                node.parent_solution = empty_ss!();
+                node.number_facts_rules = count_rules(kb, &cmplx.key());
+                return rc_cell!(node);
             },
             _ => { panic!("base_sn() - Only valid for queries."); },
         }
@@ -120,11 +113,8 @@ impl Goal {
         let goal = self.clone();
 
         // Make a solution node with defaults.
-        let node = SolutionNode::new(goal, kb);
-        let rc_node = rc_cell!(node);
-        let mut mut_node = rc_node.borrow_mut();
-
-        mut_node.parent_node = Some(parent_node);
+        let mut node = SolutionNode::new(goal, kb);
+        node.parent_node = Some(parent_node);
 
         match self {
 
@@ -134,38 +124,40 @@ impl Goal {
 
                     Operator::Or(_) | Operator::And(_) => {
 
-                        mut_node.parent_solution = Rc::clone(&parent_solution);
-
+                        node.parent_solution = Rc::clone(&parent_solution);
                         let (head, tail) = op.split_head_tail();
-                        mut_node.operator_tail = Some(tail);
+                        node.operator_tail = Some(tail);
 
+                        let rc_node = rc_cell!(node);
                         // Solution node of first goal.
                         let head_node = head.get_sn(kb, Rc::clone(&parent_solution),
                                                         Rc::clone(&rc_node));
+
+                        let mut mut_node = rc_node.borrow_mut();
                         mut_node.head_sn = Some(head_node);
                         return Rc::clone(&rc_node);
                     },
                     Operator::Time(_) => {
-                        mut_node.parent_solution = Rc::clone(&parent_solution);
-                        return Rc::clone(&rc_node);
+                        node.parent_solution = Rc::clone(&parent_solution);
+                        let rc_node = rc_cell!(node);
+                        return rc_node;
                     },
 
                 } // match op
             },
             Goal::ComplexGoal(cmplx) => {
 
-                mut_node.parent_solution = parent_solution;
+                node.parent_solution = parent_solution;
 
                 // Count the number of rules or facts which match the goal.
-                mut_node.number_facts_rules = count_rules(kb, &cmplx.key());
-
-                return Rc::clone(&rc_node);
+                node.number_facts_rules = count_rules(kb, &cmplx.key());
+                return rc_cell!(node);
 
             },
             Goal::BuiltInGoal(_) => {
 
-                mut_node.parent_solution = parent_solution;
-                return Rc::clone(&rc_node);
+                node.parent_solution = parent_solution;
+                return rc_cell!(node);
 
             },
             Goal::Nil => { panic!("goal.rs - Implement later."); },
