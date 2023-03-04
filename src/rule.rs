@@ -232,10 +232,10 @@ impl Rule {
     /// }
     /// // Prints: parent($X_1, $Y_2) :- mother($X_1, $Y_2).
     /// ```
-    pub fn recreate_variables(&self, recreated_vars: &mut VarMap) -> Rule {
+    pub fn recreate_variables(self, recreated_vars: &mut VarMap) -> Rule {
         let new_head = self.head.recreate_variables(recreated_vars);
         let new_body: Goal;
-        match &self.body {
+        match self.body {
             Goal::OperatorGoal(op) => {
                 new_body = Goal::OperatorGoal(op.recreate_variables(recreated_vars));
             },
