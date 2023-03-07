@@ -104,7 +104,15 @@ impl<'a> SolutionNode<'a> {
     } // new()
 
     pub fn set_no_backtracking(&mut self) {
-        println!("xxxxxxxxx set_no_backtracking()");
+        self.no_backtracking = true;
+        let opt_parent = &self.parent_node;
+        match opt_parent {
+            None => return,
+            Some(pn) => {
+                let pn2 = Rc::clone(pn);
+                return pn2.borrow_mut().set_no_backtracking();
+            },
+        }
     }
 
 } // impl SolutionNode
@@ -159,6 +167,11 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
     if sn_ref.no_backtracking { return None; };
 
     let goal = sn_ref.goal.clone();
+
+    if Goal::BuiltInGoal(BuiltInPredicate::Cut) == goal {
+        sn_ref.set_no_backtracking();
+        return Some(Rc::clone(&sn_ref.parent_solution));
+    }
 
     match goal {
 
