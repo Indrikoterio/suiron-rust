@@ -72,7 +72,7 @@ impl Goal {
         match self {
             Goal::ComplexGoal(cmplx) => {
                 let mut node = SolutionNode::new(goal, kb);
-                node.parent_solution = empty_ss!();
+                node.ss = empty_ss!();
                 node.number_facts_rules = count_rules(kb, &cmplx.key());
                 return rc_cell!(node);
             },
@@ -85,7 +85,7 @@ impl Goal {
     /// # Arguments
     /// * `self` - the goal to be proven
     /// * `kb` - Knowledge Base
-    /// * `parent_solution`
+    /// * `ss`
     /// * `parent_node`
     /// # Return
     /// * reference to a [SolutionNode](../solution_node/struct.SolutionNode.html)
@@ -106,7 +106,7 @@ impl Goal {
     /// let sn = query.get_sn(&kb, ss, Rc::clone(&base));
     /// ```
     pub fn get_sn<'a>(&self, kb: &'a KnowledgeBase,
-                      parent_solution: Rc<SubstitutionSet<'a>>,
+                      ss: Rc<SubstitutionSet<'a>>,
                       parent_node: Rc<RefCell<SolutionNode<'a>>>)
                       -> Rc<RefCell<SolutionNode<'a>>> {
 
@@ -124,13 +124,13 @@ impl Goal {
 
                     Operator::Or(_) | Operator::And(_) => {
 
-                        node.parent_solution = Rc::clone(&parent_solution);
+                        node.ss = Rc::clone(&ss);
                         let (head, tail) = op.split_head_tail();
                         node.operator_tail = Some(tail);
 
                         let rc_node = rc_cell!(node);
                         // Solution node of first goal.
-                        let head_node = head.get_sn(kb, Rc::clone(&parent_solution),
+                        let head_node = head.get_sn(kb, Rc::clone(&ss),
                                                         Rc::clone(&rc_node));
 
                         let mut mut_node = rc_node.borrow_mut();
@@ -138,7 +138,7 @@ impl Goal {
                         return Rc::clone(&rc_node);
                     },
                     Operator::Time(_) => {
-                        node.parent_solution = Rc::clone(&parent_solution);
+                        node.ss = Rc::clone(&ss);
                         let rc_node = rc_cell!(node);
                         return rc_node;
                     },
@@ -147,7 +147,7 @@ impl Goal {
             },
             Goal::ComplexGoal(cmplx) => {
 
-                node.parent_solution = parent_solution;
+                node.ss = ss;
 
                 // Count the number of rules or facts which match the goal.
                 node.number_facts_rules = count_rules(kb, &cmplx.key());
@@ -156,7 +156,7 @@ impl Goal {
             },
             Goal::BuiltInGoal(_) => {
 
-                node.parent_solution = parent_solution;
+                node.ss = ss;
                 return rc_cell!(node);
 
             },
