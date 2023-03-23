@@ -130,7 +130,7 @@ pub fn next_solution_bip<'a>(bip: BuiltInPredicate,
 
     if !sn_ref.more_solutions { return None; };
     sn_ref.more_solutions = false;
-    let ss = Rc::clone(&sn_ref.parent_solution);
+    let ss = Rc::clone(&sn_ref.ss);
 
     match bip {
         BuiltInPredicate::Print(_) => {
@@ -147,27 +147,27 @@ pub fn next_solution_bip<'a>(bip: BuiltInPredicate,
             return left.unify(right, &ss);
         },
         BuiltInPredicate::Equal(args) => {
-            return bip_equal(args, &sn_ref.parent_solution);
+            return bip_equal(args, &sn_ref.ss);
         },
         BuiltInPredicate::LessThan(args) => {
-            return bip_less_than(args, &sn_ref.parent_solution);
+            return bip_less_than(args, &sn_ref.ss);
         },
         BuiltInPredicate::LessThanOrEqual(args) => {
-            return bip_less_than_or_equal(args, &sn_ref.parent_solution);
+            return bip_less_than_or_equal(args, &sn_ref.ss);
         },
         BuiltInPredicate::GreaterThan(args) => {
-            return bip_greater_than(args, &sn_ref.parent_solution);
+            return bip_greater_than(args, &sn_ref.ss);
         },
         BuiltInPredicate::GreaterThanOrEqual(args) => {
-            return bip_greater_than_or_equal(args, &sn_ref.parent_solution);
+            return bip_greater_than_or_equal(args, &sn_ref.ss);
         },
         BuiltInPredicate::NL => { // New Line. This cannot fail.
             print!("\n");
-            return Some(Rc::clone(&sn_ref.parent_solution));
+            return Some(Rc::clone(&sn_ref.ss));
         },
         BuiltInPredicate::Cut => { // !
 //            sn_ref.set_no_backtracking();
-            return Some(Rc::clone(&sn_ref.parent_solution));
+            return Some(Rc::clone(&sn_ref.ss));
         },
         BuiltInPredicate::Fail => { return None; }, // always fails
         _ => { panic!("next_solution_bip() - Not implemented yet."); },
