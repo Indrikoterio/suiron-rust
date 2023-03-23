@@ -129,8 +129,8 @@ pub fn next_solution_or<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
         None => { return None; },
         Some(tail) => {
             let tail_goal = Goal::OperatorGoal(tail.clone());
-            let parent_solution = Rc::clone(&sn_ref.parent_solution);
-            let tail_sn = tail_goal.get_sn(sn_ref.kb, parent_solution, Rc::clone(&sn));
+            let ss = Rc::clone(&sn_ref.ss);
+            let tail_sn = tail_goal.get_sn(sn_ref.kb, ss, Rc::clone(&sn));
             return next_solution(Rc::clone(&tail_sn));
         },
     }
