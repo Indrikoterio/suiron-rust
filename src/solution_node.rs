@@ -42,7 +42,7 @@ pub struct SolutionNode<'a> {
     /// Reference to the parent node in the proof tree.
     pub parent_node: Option<Rc<RefCell<SolutionNode<'a>>>>,
     /// Represents the solution up to this point in the proof tree.
-    pub parent_solution: Rc<SubstitutionSet<'a>>,
+    pub ss: Rc<SubstitutionSet<'a>>,
     /// Used by the Cut operator (!) to prevent back-tracking.
     pub no_backtracking: bool,
 
@@ -70,8 +70,8 @@ impl<'a> SolutionNode<'a> {
 
     /// Creates a new SolutionNode struct, with default values.
     ///
-    /// The parent_node is set to None, and the parent_solution
-    /// is initialized to an empty substitution set.
+    /// The parent_node is set to None, and the parent solution
+    /// (ss) is initialized to an empty substitution set.
     ///
     /// # Arguments
     /// * `goal`
@@ -91,7 +91,7 @@ impl<'a> SolutionNode<'a> {
         SolutionNode {
             goal, kb,
             parent_node: None,
-            parent_solution: empty_ss!(),
+            ss: empty_ss!(),
             no_backtracking: false,
             child: None,
             rule_index: 0,
@@ -170,7 +170,7 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
 
     if Goal::BuiltInGoal(BuiltInPredicate::Cut) == goal {
         sn_ref.set_no_backtracking();
-        return Some(Rc::clone(&sn_ref.parent_solution));
+        return Some(Rc::clone(&sn_ref.ss));
     }
 
     match goal {
@@ -193,10 +193,8 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                     match sn_ref.head_sn {
                         None => {
                             let goal = goals[0].clone();
-                            let parent_solution =
-                                       Rc::clone(&sn_ref.parent_solution);
-                            let sn = goal.get_sn(sn_ref.kb, parent_solution,
-                                                 Rc::clone(&sn));
+                            let ss = Rc::clone(&sn_ref.ss);
+                            let sn = goal.get_sn(sn_ref.kb, ss, Rc::clone(&sn));
                             sn_ref.head_sn = Some(sn);
                         },
                         Some(_) => {},
@@ -247,7 +245,7 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                 sn_ref.rule_index += 1;
 
                 let head = rule.get_head();
-                let solution = head.unify(&cmplx, &Rc::clone(&sn_ref.parent_solution));
+                let solution = head.unify(&cmplx, &Rc::clone(&sn_ref.ss));
 
                 match solution {
                     None => { set_var_id(fallback_id); },  // Restore fallback ID.
@@ -278,7 +276,7 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
 
 
 /// Displays a summary of a solution node for debugging purposes.<br>
-/// KB, parent_solution and tail_sn are excluded. For example:
+/// KB, parent solution (ss) and tail_sn are excluded. For example:
 /// <pre>
 /// ----- Solution Node -----
 /// 	goal: grandfather($X, $Y)
