@@ -1,16 +1,19 @@
 //! A SolutionNode is a node in a proof tree.
 //!
-//! [Goals](../goal/enum.Goal.html) (operators, built-in predicates, and complex
-//! terms) implement a method called
-//! [get_sn()](../goal/enum.Goal.html#method.get_sn), which returns a solution
-//! node appropriate to each operator, built-in predicate, or complex term.
+//! [Goals](../goal/enum.Goal.html) (operators, built-in predicates,
+//! and complex terms) implement a method called
+//! [get_sn()](../goal/enum.Goal.html#method.get_sn), which returns
+//! a solution node appropriate to each operator, built-in predicate,
+//! or complex term.
 //!
 //! The function
 //! [next_solution()](../solution_node/fn.next_solution.html),
-//! initiates the search for a solution. When a solution is found, the search stops.
+//! initiates the search for a solution. When a solution is found,
+//! the search stops.
 //!
-//! Each solution node preserves its state (goal, parent_solution, rule_index, etc.).
-//! Calling next_solution() again will continue the search for alternative solutions.
+//! Each solution node preserves its state (goal, substitution set,
+//! rule_index, etc.). Calling next_solution() again will continue
+//! the search for alternative solutions.
 //!
 // Cleve Lendon 2023
 
@@ -27,10 +30,9 @@ use super::knowledge_base::*;
 
 /// Represents a node in a proof tree.
 ///
-/// A solution node holds the goal to be resolved, various
-/// parameters concerning that goal, and a reference to the
-/// parent_solution, which represents the state of the search
-/// so far.
+/// A solution node holds the goal to be resolved, various parameters
+/// concerning that goal, and a reference to the substitution set,
+/// which represents the state of the search so far.
 ///
 #[derive(Debug, Clone)]
 pub struct SolutionNode<'a> {
@@ -39,11 +41,12 @@ pub struct SolutionNode<'a> {
     pub goal: Goal,
     /// Reference to the Knowledge Base.
     pub kb: &'a KnowledgeBase,
+
     /// Reference to the parent node in the proof tree.
     pub parent_node: Option<Rc<RefCell<SolutionNode<'a>>>>,
-    /// Represents the solution up to this point in the proof tree.
+    /// Substitution Set - holds the complete or partial solution.
     pub ss: Rc<SubstitutionSet<'a>>,
-    /// Used by the Cut operator (!) to prevent back-tracking.
+    /// Flag used by the Cut operator (!) to prevent backtracking.
     pub no_backtracking: bool,
 
     // For Complex Solution Nodes.
@@ -62,22 +65,18 @@ pub struct SolutionNode<'a> {
     /// Tail of And/Or operator. (For And/Or goals.)
     pub operator_tail: Option<Operator>,
 
-    /// For built-in predicates which have only 1 solution.
+    /// For built-in predicates, which have only 1 solution.
     pub more_solutions: bool,
+
 } // SolutionNode
 
 impl<'a> SolutionNode<'a> {
 
     /// Creates a new SolutionNode struct, with default values.
     ///
-    /// The parent_node is set to None, and the parent solution
-    /// (ss) is initialized to an empty substitution set.
+    /// The parent_node is set to None, and the solution (ss)
+    /// is initialized to an empty substitution set.
     ///
-    /// # Arguments
-    /// * `goal`
-    /// * `kb` - Knowledge Base
-    /// # Returns
-    /// * `SolutionNode`
     /// # Usage
     /// ```
     /// use suiron::*;
@@ -103,19 +102,53 @@ impl<'a> SolutionNode<'a> {
         }
     } // new()
 
+    /// Sets the no_backtracking flag to true.
+    ///
+    /// The Cut operator (!) calls this method to disable backtracking
+    /// on the current node and all of its ancestors.
+    ///
+    /// # Note
+    /// In order to avoid weeks of whack-a-mole with compiler errors,
+    /// this method was implemented with 'unsafe' code.
+    ///
+    /// # Usage
+    /// ```
+    /// use suiron::*;
+    ///
+    /// let kb = test_kb();
+    /// let query = parse_query("test").unwrap();
+    /// let solution_node = query.base_node(&kb);
+    ///
+    /// solution_node.borrow_mut().set_no_backtracking();
+    /// ```
     pub fn set_no_backtracking(&mut self) {
+
         self.no_backtracking = true;
-        let opt_parent = &self.parent_node;
-        match opt_parent {
-            None => return,
-            Some(pn) => {
-                let pn2 = Rc::clone(pn);
-                return pn2.borrow_mut().set_no_backtracking();
-            },
-        }
-    }
+        let mut option_parent = &self.parent_node;
+        loop {
+            match option_parent {
+                None => { return; },
+                Some(pn) => {
+                    let raw = pn.as_ptr();
+                    unsafe {
+                        // Set no_backtracking on parent.
+                        (*raw).no_backtracking = true;
+                        // If there is a head solution node, set
+                        // the no_backtracking flag there also.
+                        if let Some(head_node) = &(*raw).head_sn {
+                            let raw2 = head_node.as_ptr();
+                            (*raw2).no_backtracking = true;
+                        }
+                        // Get next parent.
+                        option_parent = &(*raw).parent_node;
+                    }
+                },
+            }
+        } // loop
+    } // set_no_backtracking()
 
 } // impl SolutionNode
+
 
 /// Finds the first and next solutions of the given solution node.
 ///
@@ -131,12 +164,7 @@ impl<'a> SolutionNode<'a> {
 /// fact/rule until the relevant predicate in the knowledge base has
 /// been exhausted. In such a case, the method returns None to indicate
 /// failure.
-/// # Arguments
-/// * `sn` - solution node
-/// # Return
-/// * `Option` -
-/// Some([SubstitutionSet](../substitution_set/type.SubstitutionSet.html))
-/// or None
+///
 /// # Usage
 /// ```
 /// use std::rc::Rc;
@@ -204,8 +232,9 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                         Some(head_sn) => {
                             let solution = next_solution(Rc::clone(&head_sn));
                             let elapsed = now.elapsed();
+                            let seconds = elapsed.as_secs();
                             let micro = elapsed.subsec_nanos() / 1000;
-                            println!("{} seconds {} microseconds", elapsed.as_secs(), micro);
+                            println!("{} seconds {} microseconds", seconds, micro);
                             return solution;
                         },
                         None => { panic!("next_solution() - \
@@ -276,7 +305,7 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
 
 
 /// Displays a summary of a solution node for debugging purposes.<br>
-/// KB, parent solution (ss) and tail_sn are excluded. For example:
+/// KB, the substitution set (ss) and tail_sn are excluded. For example:
 /// <pre>
 /// ----- Solution Node -----
 /// 	goal: grandfather($X, $Y)
@@ -346,14 +375,31 @@ mod test {
         // Set up another solution node. The parent node is sn1.
         let ss = empty_ss!();
         let query = parse_query("goal2()").unwrap();
-        let _sn2 = query.get_sn(&kb, ss, Rc::clone(&sn1));
+        let sn2 = query.get_sn(&kb, ss, Rc::clone(&sn1));
 
         assert_eq!(false, sn1.borrow().no_backtracking);
 
         // Set the no_backtracking flag on the child node.
-//xxxxxxxxxxxxx
-//        sn2.borrow_mut().set_no_backtracking();
-//        assert_eq!(true, sn1.borrow().no_backtracking);
+        sn2.borrow_mut().set_no_backtracking();
+        assert_eq!(true, sn1.borrow().no_backtracking);
+
+        // A better test.
+        start_query();
+        let mut kb = KnowledgeBase::new();
+        let rule1 = parse_rule("get_value($X) :- $X = 1.").unwrap();
+        let rule2 = parse_rule("get_value($X) :- $X = 2.").unwrap();
+        let rule3 = parse_rule("test($X) :- get_value($X), !, $X == 2.").unwrap();
+        add_rules!(&mut kb, rule1, rule2, rule3);
+
+        // Make a query
+        let query = parse_query("test($X)").unwrap();
+        let sn = query.base_node(&kb);
+
+        let solution = next_solution(Rc::clone(&sn));
+        match solution {
+            None => {},
+            Some(_ss) => { panic!("There should be no solutions."); },
+        }
 
     }  // test_set_no_backtracking()
 
@@ -395,12 +441,12 @@ mod test {
     } // test_next_solution1()
 
     // The test knowledge base has two rules which define a grandfather.
-    //    grandfather($X, $Y) :- father($X, $Z), father($Z, $Y).
-    //    grandfather($X, $Y) :- father($X, $Z), mother($Z, $Y).
+    //     grandfather($X, $Y) :- father($X, $Z), father($Z, $Y).
+    //     grandfather($X, $Y) :- father($X, $Z), mother($Z, $Y).
     // This test function makes a query to find grandfathers, and
-    // a corresponding solution node. The method next_solution()
-    // is called twice times to confirm that all valid solutions
-    // can be found.
+    // a corresponding solution node. The method next_solution() is
+    // called twice to confirm that all valid solutions can be found.
+
     #[test]
     #[serial]
     fn test_next_solution2() {
