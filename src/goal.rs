@@ -72,7 +72,6 @@ impl Goal {
         match self {
             Goal::ComplexGoal(cmplx) => {
                 let mut node = SolutionNode::new(goal, kb);
-                node.ss = empty_ss!();
                 node.number_facts_rules = count_rules(kb, &cmplx.key());
                 return rc_cell!(node);
             },
@@ -129,9 +128,10 @@ impl Goal {
                         node.operator_tail = Some(tail);
 
                         let rc_node = rc_cell!(node);
+
                         // Solution node of first goal.
                         let head_node = head.get_sn(kb, Rc::clone(&ss),
-                                                        Rc::clone(&rc_node));
+                                                    Rc::clone(&rc_node));
 
                         let mut mut_node = rc_node.borrow_mut();
                         mut_node.head_sn = Some(head_node);
