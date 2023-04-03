@@ -139,7 +139,7 @@ impl<'a> SolutionNode<'a> {
                             let raw2 = head_node.as_ptr();
                             (*raw2).no_backtracking = true;
                         }
-                        // Get next parent.
+                        // Get the next parent.
                         option_parent = &(*raw).parent_node;
                     }
                 },
@@ -149,6 +149,15 @@ impl<'a> SolutionNode<'a> {
 
 } // impl SolutionNode
 
+/// Gets the goal from a reference to a solution node.
+fn get_goal(sn: &Rc<RefCell<SolutionNode>>) -> Goal {
+    sn.borrow().goal.clone()
+}
+
+/// Gets the no_backtracking flag from a reference to a solution node.
+fn no_backtracking(sn: &Rc<RefCell<SolutionNode>>) -> bool {
+    sn.borrow().no_backtracking
+}
 
 /// Finds the first and next solutions of the given solution node.
 ///
@@ -191,15 +200,8 @@ impl<'a> SolutionNode<'a> {
 pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                          -> Option<Rc<SubstitutionSet<'a>>> {
 
-    let mut sn_ref = sn.borrow_mut(); // Get a mutable reference.
-    if sn_ref.no_backtracking { return None; };
-
-    let goal = sn_ref.goal.clone();
-
-    if Goal::BuiltInGoal(BuiltInPredicate::Cut) == goal {
-        sn_ref.set_no_backtracking();
-        return Some(Rc::clone(&sn_ref.ss));
-    }
+    if no_backtracking(&sn) { return None; }
+    let goal = get_goal(&sn);
 
     match goal {
 
@@ -208,16 +210,17 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
             match op {
 
                 Operator::And(_) => {
-                    return next_solution_and(Rc::clone(&sn), sn_ref);
+                    return next_solution_and(Rc::clone(&sn));
                 },
                 Operator::Or(_) => {
-                    return next_solution_or(Rc::clone(&sn), sn_ref);
+                    return next_solution_or(Rc::clone(&sn));
                 },
                 Operator::Time(goals) => {
 
                     if goals.len() < 1 { return None; }
                     let now = Instant::now();
 
+                    let mut sn_ref = sn.borrow_mut();
                     match sn_ref.head_sn {
                         None => {
                             let goal = goals[0].clone();
@@ -246,6 +249,8 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
         }, // Goal::OperatorGoal(op)
 
         Goal::ComplexGoal(cmplx) => {
+
+            let mut sn_ref = sn.borrow_mut();
 
             // Check for a child solution.
             match &sn_ref.child {
@@ -294,7 +299,7 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
         },
 
         Goal::BuiltInGoal(built_in_predicate) => {
-            return next_solution_bip(built_in_predicate, sn_ref);
+            return next_solution_bip(Rc::clone(&sn), built_in_predicate);
         },
 
         _ => panic!("next_solution() - Implement this."),
