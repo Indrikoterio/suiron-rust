@@ -6,7 +6,6 @@
 // Cleve Lendon 2023
 
 use std::rc::Rc;
-use std::cell::RefMut;
 use std::cell::RefCell;
 
 use crate::*;
@@ -27,55 +26,51 @@ use super::substitution_set::*;
 /// `Option` -
 /// Some([SubstitutionSet](../substitution_set/type.SubstitutionSet.html))
 /// or None
-pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
-                             sn_ref: RefMut<SolutionNode<'a>>)
+pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                              -> Option<Rc<SubstitutionSet<'a>>> {
 
+    let sn_ref = sn.borrow_mut(); // Get a mutable reference.
+
     // Check for the tail solution.
-    match &sn_ref.tail_sn {
-        None => {},
-        Some(tail_sn) => {
-            if let Some(ss) = next_solution(Rc::clone(&tail_sn)) {
-                return Some(ss);
-            }
-        },
+    if let Some(tail_sn) = &sn_ref.tail_sn {
+        if let Some(ss) = next_solution(Rc::clone(&tail_sn)) {
+            return Some(ss);
+        }
     }
 
-    let mut solution: Option<Rc<SubstitutionSet>>;
-
-    match &sn_ref.head_sn {
+    let head_sn = match &sn_ref.head_sn {
         None => { return None; },
-        Some(head_sn) => { solution = next_solution(Rc::clone(&head_sn)); },
-    }
+        Some(head_sn) => { head_sn },
+    };
+
+    let mut solution = next_solution(Rc::clone(&head_sn));
 
     loop {
 
         match solution {
+
             None => { return None; },
             Some(sol) => {
 
                 // print_ss(&sol); // For debugging.
                 match &sn_ref.operator_tail {
-                    None => { Some(sol); },
+                    None => { return Some(Rc::clone(&sol)); },
                     Some(tail) => {
-                        if tail.len() == 0 { return Some(sol); }
+
+                        if tail.len() == 0 { return Some(Rc::clone(&sol)); }
 
                         // Tail solution node has to be an And solution node.
                         let tail_goal = Goal::OperatorGoal(tail.clone());
                         let tail_sn = tail_goal.get_sn(sn_ref.kb, sol, Rc::clone(&sn));
                         let tail_solution = next_solution(Rc::clone(&tail_sn));
-                        match tail_solution {
-                            None => {},
-                            Some(tail_solution) => { return Some(tail_solution); },
-                        }
+                        if tail_solution.is_some() { return tail_solution; }
                     },
                 }
             },
-        }
-        match &sn_ref.head_sn {
-            None => { return None; },
-            Some(head_sn) => { solution = next_solution(Rc::clone(&head_sn))},
-        }
+        } // match solution
+
+        // Try another solution.
+        solution = next_solution(Rc::clone(&head_sn));
 
     } // loop
 
@@ -94,24 +89,20 @@ pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
 /// `Option` -
 /// Some([SubstitutionSet](../substitution_set/type.SubstitutionSet.html))
 /// or None
-pub fn next_solution_or<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
-                            sn_ref: RefMut<SolutionNode<'a>>)
+pub fn next_solution_or<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                             -> Option<Rc<SubstitutionSet<'a>>> {
 
+    let sn_ref = sn.borrow_mut(); // Get a mutable reference.
+
     // Check for the tail solution.
-    match &sn_ref.tail_sn {
-        None => {},
-        Some(tail_sn) => {
-            return next_solution(Rc::clone(&tail_sn));
-        },
+    if let Some(tail_sn) = &sn_ref.tail_sn {
+        return next_solution(Rc::clone(&tail_sn));
     }
 
-    let solution: Option<Rc<SubstitutionSet>>;
-
-    match &sn_ref.head_sn {
+    let solution = match &sn_ref.head_sn {
         None => { return None; },
-        Some(head_sn) => { solution = next_solution(Rc::clone(&head_sn)); },
-    }
+        Some(head_sn) => { next_solution(Rc::clone(&head_sn)) },
+    };
 
     match solution {
         None => {
