@@ -7,7 +7,7 @@
 
 use std::fmt;
 use std::rc::Rc;
-use std::cell::RefMut;
+use std::cell::RefCell;
 
 use super::logic_var::*;
 use super::unifiable::*;
@@ -124,9 +124,11 @@ impl BuiltInPredicate {
 /// * `Option` -
 /// Some([SubstitutionSet](../substitution_set/type.SubstitutionSet.html))
 /// or None
-pub fn next_solution_bip<'a>(bip: BuiltInPredicate,
-                             mut sn_ref: RefMut<SolutionNode<'a>>)
+pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
+                             bip: BuiltInPredicate)
                              -> Option<Rc<SubstitutionSet<'a>>> {
+
+    let mut sn_ref = sn.borrow_mut(); // Get a mutable reference.
 
     if !sn_ref.more_solutions { return None; };
     sn_ref.more_solutions = false;
@@ -166,8 +168,8 @@ pub fn next_solution_bip<'a>(bip: BuiltInPredicate,
             return Some(Rc::clone(&sn_ref.ss));
         },
         BuiltInPredicate::Cut => { // !
-//            sn_ref.set_no_backtracking();
-            return Some(Rc::clone(&sn_ref.ss));
+            sn_ref.set_no_backtracking();
+            return Some(Rc::clone(&ss));
         },
         BuiltInPredicate::Fail => { return None; }, // always fails
         _ => { panic!("next_solution_bip() - Not implemented yet."); },
