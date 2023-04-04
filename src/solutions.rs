@@ -9,7 +9,7 @@ use super::time_out::*;
 use super::solution_node::*;
 use super::unifiable::Unifiable;
 
-const S_TIMEOUT: u64 = 100; // milliseconds
+const S_TIMEOUT: u64 = 1000; // milliseconds
 
 /// Finds one solution for the given solution node.
 ///
