@@ -180,7 +180,7 @@ impl Unifiable {
                     Unifiable::LogicVar{id: _, name: _} => { other.unify(&self, ss) },
                     Unifiable::Anonymous => { return Some(Rc::clone(ss)); },
                     _ => None,
-               }
+                }
             },
             Unifiable::SFloat(self_float) => {
                 match other {
@@ -191,7 +191,7 @@ impl Unifiable {
                     Unifiable::LogicVar{id: _, name: _} => { other.unify(&self, ss) },
                     Unifiable::Anonymous => { return Some(Rc::clone(ss)); },
                     _ => None,
-               }
+                }
             },
             Unifiable::SInteger(self_int) => {
                 match other {
@@ -202,7 +202,7 @@ impl Unifiable {
                     Unifiable::LogicVar{id: _, name: _} => { other.unify(&self, ss) },
                     Unifiable::Anonymous => { return Some(Rc::clone(ss)); },
                     _ => None,
-               }
+                }
             },
             Unifiable::LogicVar{id, name: _} => {
 
@@ -237,11 +237,8 @@ impl Unifiable {
 
                 let mut new_ss = vec![None; length_dst];
                 for i in 0..length_src {
-                    match &ss[i] {
-                        Some(item) => {
-                            new_ss[i] = Some(Rc::clone(&item));
-                        },
-                        None => {},
+                    if let Some(item) = &ss[i] {
+                        new_ss[i] = Some(Rc::clone(&item));
                     }
                 }
 
@@ -299,8 +296,7 @@ impl Unifiable {
                         let mut this_list = self;
                         let mut other_list = other;
 
-                        while *this_list  != Unifiable::Nil &&
-                              *other_list != Unifiable::Nil {
+                        while *this_list  != Unifiable::Nil && *other_list != Unifiable::Nil {
 
                             if let Unifiable::SLinkedList {
                                          term: this_term,
@@ -344,13 +340,10 @@ impl Unifiable {
                                     this_list  = this_next;
                                     other_list = other_next;
                                 }
-                                else {
-                                    panic!("{}", NOT_A_NODE_ERR);
-                                }
+                                else { panic!("{}", NOT_A_NODE_ERR); }
                             }
-                            else {
-                                panic!("{}", NOT_A_NODE_ERR);
-                            }
+                            else { panic!("{}", NOT_A_NODE_ERR); }
+
                             new_ss = &ss2;
 
                         } // while not Nil
