@@ -218,7 +218,6 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                 Operator::Time(goals) => {
 
                     if goals.len() < 1 { return None; }
-                    let now = Instant::now();
 
                     let mut sn_ref = sn.borrow_mut();
                     match sn_ref.head_sn {
@@ -233,11 +232,9 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
 
                     match &sn_ref.head_sn {
                         Some(head_sn) => {
+                            let now = Instant::now();
                             let solution = next_solution(Rc::clone(&head_sn));
-                            let elapsed = now.elapsed();
-                            let seconds = elapsed.as_secs();
-                            let micro = elapsed.subsec_nanos() / 1000;
-                            println!("{} seconds {} microseconds", seconds, micro);
+                            print_elapsed(now);
                             return solution;
                         },
                         None => { panic!("next_solution() - \
@@ -307,6 +304,20 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
     } // match self
 
 } // next_solution()
+
+
+/// A utility for printing elapsed time.
+pub fn print_elapsed(time: Instant) {
+    let elapsed = time.elapsed();
+    let seconds = elapsed.as_secs();
+    let micro = elapsed.subsec_nanos() / 1000;
+    if seconds == 1 {
+        println!("{} second {} microseconds", seconds, micro);
+    }
+    else {
+        println!("{} seconds {} microseconds", seconds, micro);
+    }
+} // print_elapsed()
 
 
 /// Displays a summary of a solution node for debugging purposes.<br>
