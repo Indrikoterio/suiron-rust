@@ -235,8 +235,8 @@ impl Unifiable {
                 let mut length_dst = length_src;
                 if *id >= length_dst { length_dst = *id + 1 }
 
-                let mut new_ss = vec![None; length_dst];
-                for i in 0..length_src {
+                let mut new_ss: Vec<Option<Rc<Unifiable>>> = vec![None; length_dst];
+                for i in 1..length_src {
                     if let Some(item) = &ss[i] {
                         new_ss[i] = Some(Rc::clone(&item));
                     }
