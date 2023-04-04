@@ -11,9 +11,9 @@
 %
 % This is called by TestTime to test the 'time' predicate.
 
-measure :- time(qsort).
+measure($M) :- time(qsort($M)).
 
-qsort :- data($List), qsort($List, $_, []), print(Finished), nl.
+qsort($Out) :- data($List), qsort($List, $Out, []), nl, print(Finished), nl.
 
 qsort([$X | $L], $R, $R0) :-
        partition($L, $X, $L1, $L2),
