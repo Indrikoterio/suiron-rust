@@ -1,4 +1,4 @@
-//! Support for the built-in predicate append().
+//! Appends terms (including lists) to make a new linked list.
 
 use std::rc::Rc;
 
