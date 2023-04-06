@@ -308,7 +308,8 @@ pub fn get_complex<'a>(term: &'a Unifiable, ss: &'a SubstitutionSet) -> Option<&
 /// println!("{}", result);  // Prints: [Argon, Krypton]
 /// ```
 ///
-pub fn get_list<'a>(term: &'a Unifiable, ss: &'a SubstitutionSet) -> Option<&'a Unifiable> {
+pub fn get_list<'a>(term: &'a Unifiable, ss: &'a SubstitutionSet)
+                    -> Option<&'a Unifiable> {
     match *term {
         Unifiable::SLinkedList{term: _, next: _, count: _, tail_var: _}
             => { return Some(term); },
