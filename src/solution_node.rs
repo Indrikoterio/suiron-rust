@@ -222,7 +222,7 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                     let mut sn_ref = sn.borrow_mut();
                     match sn_ref.head_sn {
                         None => {
-                            let goal = goals[0].clone();
+                            let goal = &goals[0];
                             let ss = Rc::clone(&sn_ref.ss);
                             let sn = goal.get_sn(sn_ref.kb, ss, Rc::clone(&sn));
                             sn_ref.head_sn = Some(sn);
