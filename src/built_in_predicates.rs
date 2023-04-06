@@ -136,21 +136,21 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
 
     if !sn_ref.more_solutions { return None; };
     sn_ref.more_solutions = false;
-    let ss = Rc::clone(&sn_ref.ss);
 
     match bip {
         BuiltInPredicate::Print(_) => {
-            next_solution_print(bip, &ss);
+            next_solution_print(bip, &sn_ref.ss);
+            let ss = Rc::clone(&sn_ref.ss);
             return Some(ss);
         },
         BuiltInPredicate::Append(_) => {
             // next_solution_append writes to ss.
-            return next_solution_append(bip, &ss);
+            return next_solution_append(bip, &sn_ref.ss);
         },
         BuiltInPredicate::Unify(args) => {
             let left  = &args[0];
             let right = &args[1];
-            return left.unify(right, &ss);
+            return left.unify(right, &sn_ref.ss);
         },
         BuiltInPredicate::Equal(args) => {
             return bip_equal(args, &sn_ref.ss);
@@ -168,7 +168,8 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
             return bip_greater_than_or_equal(args, &sn_ref.ss);
         },
         BuiltInPredicate::PrintList(_) => {
-            next_solution_print_list(bip, &ss);
+            next_solution_print_list(bip, &sn_ref.ss);
+            let ss = Rc::clone(&sn_ref.ss);
             return Some(ss);
         },
         BuiltInPredicate::NL => { // New Line. This cannot fail.
@@ -177,7 +178,7 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
         },
         BuiltInPredicate::Cut => { // !
             sn_ref.set_no_backtracking();
-            return Some(Rc::clone(&ss));
+            return Some(Rc::clone(&sn_ref.ss));
         },
         BuiltInPredicate::Fail => { return None; }, // always fails
         _ => { panic!("next_solution_bip() - Not implemented yet."); },
