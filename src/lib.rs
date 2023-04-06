@@ -258,6 +258,7 @@ pub mod built_in_predicates;
 pub mod built_in_functions;
 pub mod built_in_comparison;
 pub mod built_in_arithmetic;
+pub mod built_in_print_list;
 pub mod time_out;
 
 #[macro_use]
@@ -288,4 +289,5 @@ pub use built_in_predicates::*;
 pub use built_in_functions::*;
 pub use built_in_comparison::*;
 pub use built_in_arithmetic::*;
+pub use built_in_print_list::*;
 pub use time_out::*;
