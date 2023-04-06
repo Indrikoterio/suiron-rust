@@ -45,6 +45,19 @@ pub fn next_solution_print_list<'a>(bip: BuiltInPredicate,
             // Iterate through arguments
             let mut first = true;
             for arg in args {
+
+                // If the argument is a variable, get the ground term.
+                let arg = match arg {
+                    Unifiable::LogicVar{id: _, name: _} => {
+                        let ground = get_ground_term(&arg, &ss);
+                        match ground {
+                            None => { arg },
+                            Some(arg) => { arg.clone() },
+                        }
+                    },
+                    _ => arg,
+                };
+
                 // If argument is an SLinkedList
                 if let Unifiable::SLinkedList{term: _, next: _,
                                   tail_var: _, count: _} = arg {
