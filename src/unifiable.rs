@@ -414,12 +414,12 @@ impl Unifiable {
 
             Unifiable::LogicVar{id: _, name} => {
                 if let Some(id) = recreated_vars.get(&name) {
-                    Unifiable::LogicVar{id: *id, name: name.clone()}
+                    Unifiable::LogicVar{id: *id, name: name}
                 }
                 else {
                     let next_id = next_id();
                     recreated_vars.insert(name.clone(), next_id);
-                    Unifiable::LogicVar{id: next_id, name: name.clone()}
+                    Unifiable::LogicVar{id: next_id, name: name}
                 }
             },
             Unifiable::SComplex(terms) => {
@@ -449,7 +449,6 @@ impl Unifiable {
                     let term = term.recreate_variables(recreated_vars);
                     new_terms.push(term);
                 }
-                let name = name.clone();
                 return Unifiable::SFunction{name, terms: new_terms};
             },
             _ => self,
