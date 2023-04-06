@@ -237,8 +237,8 @@ impl Unifiable {
 
                 let mut new_ss: Vec<Option<Rc<Unifiable>>> = vec![None; length_dst];
 
-                for i in 1..length_src {
-                    if let Some(item) = &ss[i] {
+                for (i, item) in ss.iter().enumerate() {
+                    if let Some(item) = item {
                         new_ss[i] = Some(Rc::clone(&item));
                     }
                 }
@@ -552,7 +552,6 @@ pub fn recreate_vars_terms(terms: Vec<Unifiable>, vars: &mut VarMap) -> Vec<Unif
     for t in terms { new_terms.push(t.recreate_variables(vars)); }
     return new_terms;
 } // recreate_vars_terms()
-
 
 // Display trait, to display unifiable terms.
 impl fmt::Display for Unifiable {
