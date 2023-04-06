@@ -15,8 +15,8 @@ use super::solution_node::*;
 use super::built_in_print::*;
 use super::built_in_append::*;
 use super::built_in_comparison::*;
+use super::built_in_print_list::*;
 use super::substitution_set::*;
-use super::unifiable::Unifiable;
 
 /// Defines built-in predicates, such as print(), append(), etc.
 ///
@@ -101,6 +101,10 @@ impl BuiltInPredicate {
                 let new_terms = recreate_vars_terms(terms, vars);
                 return BuiltInPredicate::LessThanOrEqual(new_terms);
             },
+            BuiltInPredicate::PrintList(terms) => {
+                let new_terms = recreate_vars_terms(terms, vars);
+                return BuiltInPredicate::PrintList(new_terms);
+            },
             BuiltInPredicate::NL   => { BuiltInPredicate::NL },
             BuiltInPredicate::Fail => { BuiltInPredicate::Fail },
             BuiltInPredicate::Cut  => { BuiltInPredicate::Cut },
@@ -162,6 +166,10 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
         },
         BuiltInPredicate::GreaterThanOrEqual(args) => {
             return bip_greater_than_or_equal(args, &sn_ref.ss);
+        },
+        BuiltInPredicate::PrintList(_) => {
+            next_solution_print_list(bip, &ss);
+            return Some(ss);
         },
         BuiltInPredicate::NL => { // New Line. This cannot fail.
             print!("\n");
