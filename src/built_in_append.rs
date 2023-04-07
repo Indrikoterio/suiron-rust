@@ -173,7 +173,7 @@ mod test {
 
         // Make a base solution node.
         let query = parse_query("go").unwrap();
-        let base_node = query.base_node(&kb);
+        let base_node = make_base_node(Rc::new(query), &kb);
 
         // Make a list of arguments: float, list, integer, logic var.
         let args = parse_arguments("3.14159, [A, B, C], 6, $Out").unwrap();
@@ -186,7 +186,7 @@ mod test {
         let append_pred = append_pred.recreate_variables(&mut var_map);
 
         // Create a solution node.
-        let sn = append_pred.get_sn(&kb, empty_ss!(), base_node);
+        let sn = make_solution_node(Rc::new(append_pred), &kb, empty_ss!(), base_node);
 
         // Get the solution. This will run next_solution_append().
         match next_solution(sn) {
