@@ -1,19 +1,17 @@
 //! A SolutionNode is a node in a proof tree.
 //!
-//! [Goals](../goal/enum.Goal.html) (operators, built-in predicates,
-//! and complex terms) implement a method called
-//! [get_sn()](../goal/enum.Goal.html#method.get_sn), which returns
-//! a solution node appropriate to each operator, built-in predicate,
-//! or complex term.
+//! It contains references to the [goal](../goal/enum.Goal.html) to be
+//! solved, the [knowledge base](../suiron/knowledge_base/index.html),
+//! the [SubstitutionSet](../substitution_set/index.html), and other
+//! relevant data.
 //!
 //! The function
 //! [next_solution()](../solution_node/fn.next_solution.html),
-//! initiates the search for a solution. When a solution is found,
-//! the search stops.
+//! accepts a solution node as its argument, and initiates the search
+//! for a solution. When a solution is found, the search stops.
 //!
-//! Each solution node preserves its state (goal, substitution set,
-//! rule_index, etc.). Calling next_solution() again will continue
-//! the search for alternative solutions.
+//! Each solution node preserves its state. Calling next_solution() again
+//! will continue the search for alternative solutions.
 //!
 // Cleve Lendon 2023
 
@@ -38,7 +36,7 @@ use super::knowledge_base::*;
 pub struct SolutionNode<'a> {
 
     /// The goal which this solution node seeks to resolve.
-    pub goal: Goal,
+    pub goal: Rc<Goal>,
     /// Reference to the Knowledge Base.
     pub kb: &'a KnowledgeBase,
 
@@ -65,7 +63,7 @@ pub struct SolutionNode<'a> {
     /// Tail of And/Or operator. (For And/Or goals.)
     pub operator_tail: Option<Operator>,
 
-    /// For built-in predicates, which have only 1 solution.
+    /// Flag for built-in predicates, which have only 1 solution.
     pub more_solutions: bool,
 
 } // SolutionNode
@@ -79,14 +77,15 @@ impl<'a> SolutionNode<'a> {
     ///
     /// # Usage
     /// ```
+    /// use std::rc::Rc;
     /// use suiron::*;
     ///
     /// let goal = parse_query("test($X)").unwrap();
     /// let kb   = test_kb();
-    /// let node = SolutionNode::new(goal, &kb);
+    /// let node = SolutionNode::new(Rc::new(goal), &kb);
     /// ```
     #[inline]
-    pub fn new(goal: Goal, kb: &'a KnowledgeBase) -> Self {
+    pub fn new(goal: Rc<Goal>, kb: &'a KnowledgeBase) -> Self {
         SolutionNode {
             goal, kb,
             parent_node: None,
@@ -113,11 +112,12 @@ impl<'a> SolutionNode<'a> {
     ///
     /// # Usage
     /// ```
+    /// use std::rc::Rc;
     /// use suiron::*;
     ///
     /// let kb = test_kb();
     /// let query = parse_query("test").unwrap();
-    /// let solution_node = query.base_node(&kb);
+    /// let solution_node = make_base_node(Rc::new(query), &kb);
     ///
     /// solution_node.borrow_mut().set_no_backtracking();
     /// ```
@@ -129,29 +129,31 @@ impl<'a> SolutionNode<'a> {
             match option_parent {
                 None => { return; },
                 Some(pn) => {
-                    let raw = pn.as_ptr();
+                    let raw_ptr = pn.as_ptr();
                     unsafe {
                         // Set no_backtracking on parent.
-                        (*raw).no_backtracking = true;
+                        (*raw_ptr).no_backtracking = true;
                         // If there is a head solution node, set
                         // the no_backtracking flag there also.
-                        if let Some(head_node) = &(*raw).head_sn {
-                            let raw2 = head_node.as_ptr();
-                            (*raw2).no_backtracking = true;
+                        if let Some(head_node) = &(*raw_ptr).head_sn {
+                            let raw_ptr2 = head_node.as_ptr();
+                            (*raw_ptr2).no_backtracking = true;
                         }
                         // Get the next parent.
-                        option_parent = &(*raw).parent_node;
+                        option_parent = &(*raw_ptr).parent_node;
                     }
                 },
             }
         } // loop
+
     } // set_no_backtracking()
 
 } // impl SolutionNode
 
 /// Gets the goal from a reference to a solution node.
-fn get_goal(sn: &Rc<RefCell<SolutionNode>>) -> Goal {
-    sn.borrow().goal.clone()
+fn get_goal(sn: &Rc<RefCell<SolutionNode>>) -> Rc<Goal> {
+    let g = &sn.borrow().goal;
+    Rc::clone(g)
 }
 
 /// Gets the no_backtracking flag from a reference to a solution node.
@@ -185,12 +187,13 @@ fn no_backtracking(sn: &Rc<RefCell<SolutionNode>>) -> bool {
 /// // Whom does Leonard love?
 /// // Make a query and a solution node.
 /// let query = parse_query("loves(Leonard, $Whom)").unwrap();
-/// let solution_node = query.base_node(&kb);
+/// let q = Rc::new(query);
+/// let solution_node = make_base_node(Rc::clone(&q), &kb);
 ///
 /// // Get a solution.
 /// match next_solution(solution_node) {
 ///     Some(ss) => {
-///         let result = query.replace_variables(&ss);
+///         let result = q.replace_variables(&ss);
 ///         println!("{}", result);
 ///     },
 ///     None => { println!("No."); },
@@ -203,17 +206,17 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
     if no_backtracking(&sn) { return None; }
     let goal = get_goal(&sn);
 
-    match goal {
+    match &*goal {
 
         Goal::OperatorGoal(op) => {
 
             match op {
 
                 Operator::And(_) => {
-                    return next_solution_and(Rc::clone(&sn));
+                    return next_solution_and(sn);
                 },
                 Operator::Or(_) => {
-                    return next_solution_or(Rc::clone(&sn));
+                    return next_solution_or(sn);
                 },
                 Operator::Time(goals) => {
 
@@ -222,9 +225,11 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                     let mut sn_ref = sn.borrow_mut();
                     match sn_ref.head_sn {
                         None => {
-                            let goal = &goals[0];
-                            let ss = Rc::clone(&sn_ref.ss);
-                            let sn = goal.get_sn(sn_ref.kb, ss, Rc::clone(&sn));
+                            let goal = goals[0].clone();
+                            let sn = make_solution_node(Rc::new(goal),
+                                                        sn_ref.kb,
+                                                        Rc::clone(&sn_ref.ss),
+                                                        Rc::clone(&sn));
                             sn_ref.head_sn = Some(sn);
                         },
                         Some(_) => {},
@@ -254,10 +259,7 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                 None => {},
                 Some(child_sn) => {
                     let solution = next_solution(Rc::clone(&child_sn));
-                    match solution {
-                        None => {},
-                        Some(ss) => { return Some(ss); },
-                    }
+                    if solution.is_some() { return solution; }
                 },
             }
 
@@ -283,20 +285,20 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                     Some(ss) => {
                         let body = rule.get_body();
                         if body == Goal::Nil { return Some(ss); }
-                        let child_sn = body.get_sn(sn_ref.kb, ss, Rc::clone(&sn));
+                        let child_sn = make_solution_node(Rc::new(body),
+                                                          sn_ref.kb,
+                                                          ss,
+                                                          Rc::clone(&sn));
                         sn_ref.child = Some(Rc::clone(&child_sn));
                         let child_solution = next_solution(child_sn);
-                        match child_solution {
-                            None => {},
-                            Some(ss) => { return Some(ss); },
-                        }
+                        if child_solution.is_some() { return child_solution; }
                     },
                 } // match
             }
         },
 
         Goal::BuiltInGoal(built_in_predicate) => {
-            return next_solution_bip(Rc::clone(&sn), built_in_predicate);
+            return next_solution_bip(sn, built_in_predicate.clone());
         },
 
         _ => panic!("next_solution() - Implement this."),
@@ -307,15 +309,31 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
 
 
 /// A utility for printing elapsed time.
+/// # Usage
+/// ```
+/// use std::rc::Rc;
+/// use std::time::Instant;
+/// use suiron::*;
+///
+/// let now = Instant::now();  // Mark start time.
+///
+/// // Do some stuff.
+/// let kb = test_kb();
+/// let query = parse_query("loves($Who, $Whom)").unwrap();
+/// let solution_node = make_base_node(Rc::new(query), &kb);
+/// next_solution(solution_node);
+///
+/// print_elapsed(now);  // Output elapsed time.
+/// ```
 pub fn print_elapsed(time: Instant) {
     let elapsed = time.elapsed();
     let seconds = elapsed.as_secs();
     let micro = elapsed.subsec_nanos() / 1000;
     if seconds == 1 {
-        println!("{} second {} microseconds", seconds, micro);
+        print!("{} second {} microseconds ", seconds, micro);
     }
     else {
-        println!("{} seconds {} microseconds", seconds, micro);
+        print!("{} seconds {} microseconds ", seconds, micro);
     }
 } // print_elapsed()
 
@@ -357,8 +375,7 @@ impl fmt::Display for SolutionNode<'_> {
         }
         match &self.operator_tail {
             Some(operator_tail) => {
-               let tail = operator_tail.clone();
-               out += &format!("\toperator_tail: {}\n", tail);
+               out += &format!("\toperator_tail: {}\n", operator_tail);
             },
             None => { out += "\toperator_tail: None\n"},
         }
@@ -386,12 +403,12 @@ mod test {
         // Set up a solution node.
         let kb = KnowledgeBase::new();
         let query = parse_query("goal1()").unwrap();
-        let sn1 = query.base_node(&kb);
+        let sn1 = make_base_node(Rc::new(query), &kb);
 
         // Set up another solution node. The parent node is sn1.
         let ss = empty_ss!();
         let query = parse_query("goal2()").unwrap();
-        let sn2 = query.get_sn(&kb, ss, Rc::clone(&sn1));
+        let sn2 = make_solution_node(Rc::new(query), &kb, ss, Rc::clone(&sn1));
 
         assert_eq!(false, sn1.borrow().no_backtracking);
 
@@ -409,7 +426,7 @@ mod test {
 
         // Make a query
         let query = parse_query("test($X)").unwrap();
-        let sn = query.base_node(&kb);
+        let sn = make_base_node(Rc::new(query), &kb);
 
         let solution = next_solution(Rc::clone(&sn));
         match solution {
@@ -434,17 +451,18 @@ mod test {
 
         // Make a solution node for love.
         let query = parse_query("loves($Who, $Whom)").unwrap();
-        let sn = query.base_node(&kb);
+        let q = Rc::new(query);
+        let sn = make_base_node(Rc::clone(&q), &kb);
 
         // Who loves whom?
         let ss = next_solution(Rc::clone(&sn)).unwrap();
-        let result = query.replace_variables(&ss);
+        let result = q.replace_variables(&ss);
         let s = format!("{}", result);
         assert_eq!("loves(Leonard, Penny)", s);
 
         // Who loves whom?
         let ss = next_solution(Rc::clone(&sn)).unwrap();
-        let result = query.replace_variables(&ss);
+        let result = q.replace_variables(&ss);
         let s = format!("{}", result);
         assert_eq!("loves(Penny, Leonard)", s);
 
@@ -472,11 +490,12 @@ mod test {
 
         // Make a solution node to find grandfathers.
         let query = parse_query("grandfather($Who, $Whom)").unwrap();
-        let sn = query.base_node(&kb);
+        let q = Rc::new(query);
+        let sn = make_base_node(Rc::clone(&q), &kb);
 
         match next_solution(Rc::clone(&sn)) {
             Some(ss) => {
-                let s1 = format!("{}", query.replace_variables(&ss));
+                let s1 = format!("{}", q.replace_variables(&ss));
                 assert_eq!("grandfather(Alfred, Aethelstan)", s1);
             },
             None => { panic!("Cannot find grandfather."); },
