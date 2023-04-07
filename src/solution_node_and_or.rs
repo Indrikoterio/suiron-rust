@@ -50,18 +50,21 @@ pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
         match solution {
 
             None => { return None; },
-            Some(sol) => {
+            Some(ss) => {
 
-                // print_ss(&sol); // For debugging.
+                // print_ss(&ss); // For debugging.
                 match &sn_ref.operator_tail {
-                    None => { return Some(Rc::clone(&sol)); },
+                    None => { return Some(ss); },
                     Some(tail) => {
 
-                        if tail.len() == 0 { return Some(Rc::clone(&sol)); }
+                        if tail.len() == 0 { return Some(ss); }
 
                         // Tail solution node has to be an And solution node.
                         let tail_goal = Goal::OperatorGoal(tail.clone());
-                        let tail_sn = tail_goal.get_sn(sn_ref.kb, sol, Rc::clone(&sn));
+                        let tail_sn = make_solution_node(Rc::new(tail_goal),
+                                                        sn_ref.kb,
+                                                        ss,
+                                                        Rc::clone(&sn));
                         let tail_solution = next_solution(Rc::clone(&tail_sn));
                         if tail_solution.is_some() { return tail_solution; }
                     },
@@ -121,7 +124,10 @@ pub fn next_solution_or<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
         Some(tail) => {
             let tail_goal = Goal::OperatorGoal(tail.clone());
             let ss = Rc::clone(&sn_ref.ss);
-            let tail_sn = tail_goal.get_sn(sn_ref.kb, ss, Rc::clone(&sn));
+            let tail_sn = make_solution_node(Rc::new(tail_goal),
+                                            sn_ref.kb,
+                                            ss,
+                                            Rc::clone(&sn));
             return next_solution(Rc::clone(&tail_sn));
         },
     }
