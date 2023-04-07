@@ -4,10 +4,9 @@
 //! [built-in predicates](../built_in_predicates/enum.BuiltInPredicate.html)
 //! (Print, Append, etc.) and
 //! [complex](../unifiable/enum.Unifiable.html#variant.SComplex)
-//! terms are goals. They implement the
-//! [get_sn()](../goal/enum.Goal.html#method.get_sn)
-//! method, which provides a
-//! [solution_node](../solution_node/struct.SolutionNode.html)
+//! terms are goals.<br>
+//! The function [make_solution_node()](../goal/fn.make_solution_node.html)
+//! provides a [SolutionNode](../solution_node/struct.SolutionNode.html)
 //! appropriate for each type of goal.
 //!
 // Cleve Lendon 2023
@@ -26,8 +25,6 @@ use super::knowledge_base::*;
 use super::substitution_set::*;
 use super::built_in_predicates::*;
 
-static UNKNOWN_GOAL_ERR: &str = "goal.rs - Unknown goal.";
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Goal {
     /// Holds an [Operator](../operator/enum.Operator.html),
@@ -44,128 +41,6 @@ pub enum Goal {
 
 impl Goal {
 
-    /// Creates the base solution node of a proof tree.
-    ///
-    /// The parent of the base node is initialized to None.<br>
-    /// The parent solution is initialized to an empty substitution set.
-    ///
-    /// # Arguments
-    /// * `self` - the goal to be proven
-    /// * `kb` - Knowledge Base
-    /// # Return
-    /// * reference to a [SolutionNode](../solution_node/struct.SolutionNode.html)
-    /// # Panics
-    /// * If goal is not a ComplexGoal.
-    /// # Usage
-    /// ```
-    /// use suiron::*;
-    ///
-    /// let kb = test_kb();
-    /// let query = parse_query("loves($Who, $Whom)").unwrap();
-    /// let base_node = query.base_node(&kb);
-    /// ```
-    pub fn base_node<'a>(&self, kb: &'a KnowledgeBase)
-                      -> Rc<RefCell<SolutionNode<'a>>> {
-
-        let goal = self.clone();
-
-        match self {
-            Goal::ComplexGoal(cmplx) => {
-                let mut node = SolutionNode::new(goal, kb);
-                node.number_facts_rules = count_rules(kb, &cmplx.key());
-                return rc_cell!(node);
-            },
-            _ => { panic!("base_sn() - Only valid for queries."); },
-        }
-    } // base_node()
-
-    /// Produces a solution node.
-    ///
-    /// # Arguments
-    /// * `self` - the goal to be proven
-    /// * `kb` - Knowledge Base
-    /// * `ss`
-    /// * `parent_node`
-    /// # Return
-    /// * reference to a [SolutionNode](../solution_node/struct.SolutionNode.html)
-    /// # Usage
-    /// ```
-    /// use std::rc::Rc;
-    /// use std::cell::RefCell;
-    /// use suiron::*;
-    ///
-    /// // Setup a base solution node.
-    /// let kb = KnowledgeBase::new();
-    /// let query = parse_query("goal1()").unwrap();
-    /// let base = query.base_node(&kb);
-    ///
-    /// // Setup another solution node.
-    /// let ss = empty_ss!();
-    /// let query = parse_query("goal2()").unwrap();
-    /// let sn = query.get_sn(&kb, ss, Rc::clone(&base));
-    /// ```
-    pub fn get_sn<'a>(&self, kb: &'a KnowledgeBase,
-                      ss: Rc<SubstitutionSet<'a>>,
-                      parent_node: Rc<RefCell<SolutionNode<'a>>>)
-                      -> Rc<RefCell<SolutionNode<'a>>> {
-
-        let goal = self.clone();
-
-        // Make a solution node with defaults.
-        let mut node = SolutionNode::new(goal, kb);
-        node.parent_node = Some(parent_node);
-
-        match self {
-
-            Goal::OperatorGoal(op) => {
-
-                match op {
-
-                    Operator::Or(_) | Operator::And(_) => {
-
-                        node.ss = Rc::clone(&ss);
-                        let (head, tail) = op.split_head_tail();
-                        node.operator_tail = Some(tail);
-
-                        let rc_node = rc_cell!(node);
-
-                        // Solution node of first goal.
-                        let head_node = head.get_sn(kb, Rc::clone(&ss),
-                                                    Rc::clone(&rc_node));
-
-                        let mut mut_node = rc_node.borrow_mut();
-                        mut_node.head_sn = Some(head_node);
-                        return Rc::clone(&rc_node);
-                    },
-                    Operator::Time(_) => {
-                        node.ss = Rc::clone(&ss);
-                        let rc_node = rc_cell!(node);
-                        return rc_node;
-                    },
-
-                } // match op
-            },
-            Goal::ComplexGoal(cmplx) => {
-
-                node.ss = ss;
-
-                // Count the number of rules or facts which match the goal.
-                node.number_facts_rules = count_rules(kb, &cmplx.key());
-                return rc_cell!(node);
-
-            },
-            Goal::BuiltInGoal(_) => {
-
-                node.ss = ss;
-                return rc_cell!(node);
-
-            },
-            Goal::Nil => { panic!("goal.rs - Implement later."); },
-
-        } // match
-    } // get_sn()
-
-
     /// Recreates logic variables to give them unique IDs.
     ///
     /// Logic variables in the knowledge base have an ID of 0, but when
@@ -174,7 +49,7 @@ impl Goal {
     ///
     /// # Arguments
     /// * `self`
-    /// * `vars` - set of previously recreated variable IDs
+    /// * `vars` - Map of previously recreated variable IDs.
     /// # Return
     /// * `new goal`
     /// # Usage
@@ -212,12 +87,12 @@ impl Goal {
             Goal::BuiltInGoal(bipred) => {
                 return Goal::BuiltInGoal(bipred.recreate_variables(vars));
             },
-            _ => { panic!("{}", UNKNOWN_GOAL_ERR); },
+            _ => { panic!("{}", "goal.rs - Unknown goal."); },
         } // match
 
     } // recreate_variables()
 
-    /// Replaces logic variables with ground terms from the substitution set.
+    /// Replaces logic variables with their ground terms from the substitution set.
     ///
     /// This method is useful for displaying the results of a query.
     ///
@@ -231,34 +106,32 @@ impl Goal {
     /// # Return
     /// * `new term` - should contain no variables
     /// # Panics
-    /// * If goal is not a ComplexGoal.
+    /// * If the goal is not a
+    /// [ComplexGoal](../goal/enum.Goal.html#variant.ComplexGoal)
     /// # Usage
     /// ```
+    /// use std::rc::Rc;
     /// use suiron::*;
     ///
-    /// // Setup kb and base solution node.
+    /// // Setup test knowledge base and base solution node.
     /// let kb = test_kb();
     /// let query = parse_query("loves(Leonard, $Whom)").unwrap();
-    /// let base = query.base_node(&kb);
+    /// let q = Rc::new(query);
+    /// let base = make_base_node(Rc::clone(&q), &kb);
     ///
+    /// // Find a solution.
     /// let solution = next_solution(base);
     /// match solution {
-    ///    Some(ss) => {
-    ///        println!("{}", query.replace_variables(&ss));
-    ///    },
-    ///    None => { println!("No."); },
+    ///    Some(ss) => { println!("{}", q.replace_variables(&ss)); },
+    ///    None => { println!("No more."); },
     /// }
     /// // Prints: loves(Leonard, Penny)
     /// ```
     pub fn replace_variables(&self, ss: &SubstitutionSet) -> Unifiable {
 
         match self {
-            // Probably don't need to replace variables for operators.
-            //Goal::OperatorGoal(op) => {
-            //    return op.replace_variables(&ss);
-            //},
-            Goal::ComplexGoal(u) => {
-                return u.replace_variables(&ss);
+            Goal::ComplexGoal(cmplx) => {
+                return cmplx.replace_variables(&ss);
             },
             _ => { panic!("replace_variables() - Not a complex goal."); }
         }
@@ -273,10 +146,6 @@ impl Goal {
     /// the functor is `loves` and the arity is 2, therefore the name of the
     /// predicate is `loves/2`.
     ///
-    /// # Arguments
-    /// * `self`
-    /// # Return
-    /// * `key` - String
     /// # Panics
     /// * If self is not a
     /// [complex](../unifiable/enum.Unifiable.html#variant.SComplex) term.
@@ -308,6 +177,132 @@ impl Goal {
 
 } // impl Goal
 
+/// Makes a base solution node for a proof tree.
+///
+/// The parent node of the base node is initialized to None.<br>
+/// The parent solution is initialized to an empty substitution set.
+///
+/// # Panics
+/// * If the goal is not a
+/// [ComplexGoal](../goal/enum.Goal.html#variant.ComplexGoal)
+/// # Usage
+/// ```
+/// use std::rc::Rc;
+/// use suiron::*;
+///
+/// let kb = test_kb();
+/// let query = parse_query("loves($Who, $Whom)").unwrap();
+/// let base_node = make_base_node(Rc::new(query), &kb);
+/// ```
+pub fn make_base_node<'a>(goal: Rc<Goal>, kb: &'a KnowledgeBase)
+                         -> Rc<RefCell<SolutionNode<'a>>> {
+
+    // Get predicate key for knowledge base.
+    let key: String;
+    match &*goal {
+        Goal::ComplexGoal(cmplx) => { key = cmplx.key(); },
+        _ => { panic!("make_base_node() - Goal must be a ComplexGoal."); },
+    };
+
+    let mut node = SolutionNode::new(goal, kb);
+    node.number_facts_rules = count_rules(kb, &key);
+    return rc_cell!(node);
+
+} // make_base_node()
+
+/// Makes a solution node according to the type of goal.
+///
+/// # Arguments
+/// * `self` - the goal to be proven
+/// * `kb` - Knowledge Base
+/// * `ss`
+/// * `parent_node`
+/// # Return
+/// * reference to a [SolutionNode](../solution_node/struct.SolutionNode.html)
+/// # Usage
+/// ```
+/// use std::rc::Rc;
+/// use std::cell::RefCell;
+/// use suiron::*;
+///
+/// // Setup a base solution node.
+/// let kb = KnowledgeBase::new();
+/// let query = parse_query("goal1()").unwrap();
+/// let base = make_base_node(Rc::new(query), &kb);
+///
+/// // Setup another solution node.
+/// let ss = empty_ss!();
+/// let query = parse_query("goal2()").unwrap();
+/// let sn = make_solution_node(Rc::new(query), &kb, ss, Rc::clone(&base));
+/// ```
+pub fn make_solution_node<'a>(goal: Rc<Goal>,
+                              kb: &'a KnowledgeBase,
+                              ss: Rc<SubstitutionSet<'a>>,
+                              parent_node: Rc<RefCell<SolutionNode<'a>>>)
+                              -> Rc<RefCell<SolutionNode<'a>>> {
+
+    // Make a solution node with defaults.
+    let mut node = SolutionNode::new(Rc::clone(&goal), kb);
+    node.parent_node = Some(parent_node);
+
+    match &*goal {
+
+        Goal::OperatorGoal(op) => {
+
+            match op {
+
+                Operator::Or(_) | Operator::And(_) => {
+
+                    node.ss = Rc::clone(&ss);
+                    let (head, tail) = op.split_head_tail();
+                    node.operator_tail = Some(tail);
+
+                    let rc_node = rc_cell!(node);
+
+                    // Solution node of first goal.
+                    let head_node = make_solution_node(Rc::new(head),
+                                                       kb,
+                                                       Rc::clone(&ss),
+                                                       Rc::clone(&rc_node));
+
+                    set_head_node(&rc_node, head_node);
+                    return rc_node;
+                },
+                Operator::Time(_) => {
+                    node.ss = Rc::clone(&ss);
+                    let rc_node = rc_cell!(node);
+                    return rc_node;
+                },
+
+            } // match op
+        },
+        Goal::ComplexGoal(cmplx) => {
+
+            node.ss = ss;
+
+            // Count the number of rules or facts which match the goal.
+            node.number_facts_rules = count_rules(kb, &cmplx.key());
+            return rc_cell!(node);
+
+        },
+        Goal::BuiltInGoal(_) => {
+
+            node.ss = ss;
+            return rc_cell!(node);
+
+        },
+        Goal::Nil => { panic!("goal.rs - Implement later."); },
+
+    } // match
+} // make_solution_node()
+
+
+/// This helper function sets the head_sn field of the given and/or node.
+fn set_head_node<'a>(node: &Rc<RefCell<SolutionNode<'a>>>,
+                     head_sn: Rc<RefCell<SolutionNode<'a>>>) {
+    let mut mut_node = node.borrow_mut();
+    mut_node.head_sn = Some(head_sn);
+}
 
 // Display trait, to display goals.
 impl fmt::Display for Goal {
@@ -320,7 +315,6 @@ impl fmt::Display for Goal {
         } // match
     } // fmt
 } // fmt::Display
-
 
 #[cfg(test)]
 mod test {
@@ -377,7 +371,7 @@ mod test {
         // Make a base node from a query: grandfather($X, $Y)
         // (Don't worry about recreating variable IDs for this test.)
         let query = parse_subgoal("grandfather($X, $Y)").unwrap();
-        let base_node = query.base_node(&kb);
+        let base_node = make_base_node(Rc::new(query), &kb);
         let s1 = format!("{}", base_node.borrow());
         let s2 = "----- Solution Node -----\n\
                   \tgoal: grandfather($X, $Y)\n\
@@ -397,7 +391,7 @@ mod test {
         let goal3 = Goal::OperatorGoal(op);
 
         let ss = empty_ss!();
-        let node = goal3.get_sn(&kb, ss, base_node);
+        let node = make_solution_node(Rc::new(goal3), &kb, ss, base_node);
         let s1 = format!("{}", node.borrow());
         let s2 = "----- Solution Node -----\n\
                   \tgoal: father($X, $Z), father($Z, $Y)\n\
