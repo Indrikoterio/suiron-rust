@@ -181,7 +181,7 @@ mod test {
         add_rules!(&mut kb, rule);
 
         let goal = parse_subgoal("test").unwrap();
-        let base_node = goal.base_node(&kb);
+        let base_node = make_base_node(Rc::new(goal), &kb);
 
         let solution = next_solution(base_node);
 
