@@ -41,13 +41,13 @@ fn query() {
             let query = parse_query(&input);
             match query {
                 Ok(q) => {
-                    let sn = q.base_node(&kb); // solution node
+                    let sn = make_base_node(Rc::new(q), &kb); // solution node
                     loop {
                         let result = solve(Rc::clone(&sn));
                         print!("{} ", result);
                         let _ = stdout().flush();
                         io::stdin().read_line(&mut input).expect("");
-                        if result.eq("No.") { break; }
+                        if result.eq("No more.") { break; }
                     } // loop
                 },
                 Err(err) => { println!("{}", err); },
@@ -73,21 +73,6 @@ println!("Size of <Rc<Unifiable>> is {}", std::mem::size_of::<Rc<Unifiable>>());
 println!("Size of SolutionNode is {}", std::mem::size_of::<SolutionNode>());
 println!("***********************");
 
-let kb = test_kb();
-
-// Whom does Leonard love?
-// Make a query and a solution node.
-let query = parse_query("loves(Leonard, $Whom)").unwrap();
-let solution_node = query.base_node(&kb);
-
-// Get a solution.
-match next_solution(solution_node) {
-    Some(ss) => {
-        let result = query.replace_variables(&ss);
-        println!("{}", result);
-    },
-    None => { println!("No."); },
-}
 
 } //-------------------------------
 
