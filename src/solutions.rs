@@ -10,6 +10,7 @@ use super::solution_node::*;
 use super::unifiable::Unifiable;
 
 const S_TIMEOUT: u64 = 1000; // milliseconds
+const NO_MORE: &str = "No more.";
 
 /// Finds one solution for the given solution node.
 ///
@@ -24,7 +25,7 @@ const S_TIMEOUT: u64 = 1000; // milliseconds
 ///
 /// let mut kb = test_kb();
 /// let query = parse_query("loves($Who, $Whom)").unwrap();
-/// let sn = query.base_node(&kb); // solution node
+/// let sn = make_base_node(Rc::new(query), &kb); // solution node
 ///
 /// println!("{}", solve(Rc::clone(&sn)));
 /// // Prints: $Who = Leonard, $Whom = Penny
@@ -51,7 +52,7 @@ pub fn solve<'a>(sn: Rc<RefCell<SolutionNode<'a>>>) -> String {
             let result = query.replace_variables(&ss);
             return format_solution(&query, &result);
         },
-        None => { return "No more.".to_string(); },
+        None => { return NO_MORE.to_string(); },
     } // match solution
 
 } // solve()
@@ -69,7 +70,7 @@ pub fn solve<'a>(sn: Rc<RefCell<SolutionNode<'a>>>) -> String {
 ///
 /// let mut kb = test_kb();
 /// let query = parse_query("loves($Who, $Whom)").unwrap();
-/// let sn = query.base_node(&kb); // solution node
+/// let sn = make_base_node(Rc::new(query), &kb); // solution node
 ///
 /// let results = solve_all(Rc::clone(&sn));
 /// for result in results { println!("{}", result); }
@@ -97,7 +98,7 @@ pub fn solve_all<'a>(sn: Rc<RefCell<SolutionNode<'a>>>) -> Vec<String> {
                 results.push(s);
             },
             None => {
-                results.push("No more.".to_string());
+                results.push(NO_MORE.to_string());
                 break;
             }
         } // match solution
@@ -137,11 +138,12 @@ pub fn solve_all<'a>(sn: Rc<RefCell<SolutionNode<'a>>>) -> Vec<String> {
 ///
 /// let kb = test_kb();
 /// let query = parse_query("loves(Leonard, $Whom)").unwrap();
-/// let sn = query.base_node(&kb); // solution node
+/// let q = Rc::new(query);
+/// let sn = make_base_node(Rc::clone(&q), &kb); // solution node
 ///
 /// if let Some(ss) = next_solution(Rc::clone(&sn)) {
-///     let result = query.replace_variables(&ss);
-///     println!("{}", format_solution(&query, &result));
+///     let result = q.replace_variables(&ss);
+///     println!("{}", format_solution(&q, &result));
 /// }
 /// // Prints: $Whom = Penny
 /// ```
@@ -206,7 +208,8 @@ mod test {
 
         let kb = test_kb();
         let query = parse_query("loves($Who, $Whom)").unwrap();
-        let sn = query.base_node(&kb); // solution node
+        let q = Rc::new(query.clone());
+        let sn = make_base_node(q, &kb); // solution node
 
         let mut ss = next_solution(Rc::clone(&sn));
 
@@ -247,7 +250,7 @@ mod test {
 
         let kb = test_kb();
         let query = parse_query("loves(Leonard, $Whom)").unwrap();
-        let sn = query.base_node(&kb); // solution node
+        let sn = make_base_node(Rc::new(query), &kb); // solution node
         let solution = solve(Rc::clone(&sn));
         assert_eq!("$Whom = Penny", solution);
 
@@ -257,15 +260,16 @@ mod test {
     #[serial]
     fn test_solve_all() {
 
+        clear_id();
         let kb = test_kb();
         let query = parse_query("loves($Who, $Whom)").unwrap();
-        let sn = query.base_node(&kb); // solution node
+        let sn = make_base_node(Rc::new(query), &kb); // solution node
         let results = solve_all(Rc::clone(&sn));
 
         assert_eq!(results.len(), 3, "There should be 3 solutions.");
         assert_eq!("$Who = Leonard, $Whom = Penny", results[0]);
         assert_eq!("$Who = Penny, $Whom = Leonard", results[1]);
-        assert_eq!("No.", results[2]);
+        assert_eq!(NO_MORE, results[2]);
 
     } // test_solve()
 
