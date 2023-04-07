@@ -51,7 +51,7 @@ pub fn solve<'a>(sn: Rc<RefCell<SolutionNode<'a>>>) -> String {
             let result = query.replace_variables(&ss);
             return format_solution(&query, &result);
         },
-        None => { return "No.".to_string(); },
+        None => { return "No more.".to_string(); },
     } // match solution
 
 } // solve()
@@ -88,10 +88,7 @@ pub fn solve_all<'a>(sn: Rc<RefCell<SolutionNode<'a>>>) -> Vec<String> {
     loop {
 
         let solution = next_solution(Rc::clone(&sn));
-        if query_stopped() {
-println!("Hello there hello there");
-            break;
-        }
+        if query_stopped() { break; }
 
         match solution {
             Some(ss) => {
@@ -100,7 +97,7 @@ println!("Hello there hello there");
                 results.push(s);
             },
             None => {
-                results.push("No.".to_string());
+                results.push("No more.".to_string());
                 break;
             }
         } // match solution
