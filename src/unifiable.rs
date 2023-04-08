@@ -206,6 +206,8 @@ impl Unifiable {
             },
             Unifiable::LogicVar{id, name: _} => {
 
+                let id = *id;
+
                 // The function make_logic_var() creates variables with an ID of 0.
                 // This is OK for rules stored in the knowledge base, because when
                 // a rule is fetched from the kb, the variables are recreated with
@@ -214,7 +216,7 @@ impl Unifiable {
                 // If a variable has an ID of 0 here, something has gone wrong.
                 // The following statement prevents endless loops, which occur when
                 // a substitution set has a variable with ID = 0 at location 0.
-                if *id == 0 { panic!("{}", VAR_ID_0_ERR); }
+                if id == 0 { panic!("{}", VAR_ID_0_ERR); }
 
                 // The unify method of a function evaluates the function.
                 // If the other term is a function, call its unify method.
@@ -225,15 +227,15 @@ impl Unifiable {
                 let length_src = ss.len();
 
                 // If variable is bound.
-                if *id < length_src && ss[*id] != None {
-                    if let Some(term) = &ss[*id] {
+                if id < length_src && ss[id] != None {
+                    if let Some(term) = &ss[id] {
                         let u = &*term;
                         return u.unify(other, ss);
                     }
                 }
 
                 let mut length_dst = length_src;
-                if *id >= length_dst { length_dst = *id + 1 }
+                if id >= length_dst { length_dst = id + 1 }
 
                 let mut new_ss: Vec<Option<Rc<Unifiable>>> = vec![None; length_dst];
 
@@ -243,7 +245,7 @@ impl Unifiable {
                     }
                 }
 
-                new_ss[*id] = Some(Rc::new(other.clone()));
+                new_ss[id] = Some(Rc::new(other.clone()));
                 return Some(Rc::new(new_ss));
 
             },
@@ -297,7 +299,8 @@ impl Unifiable {
                         let mut this_list = self;
                         let mut other_list = other;
 
-                        while *this_list  != Unifiable::Nil && *other_list != Unifiable::Nil {
+                        while *this_list  != Unifiable::Nil &&
+                              *other_list != Unifiable::Nil {
 
                             if let Unifiable::SLinkedList {
                                          term: this_term,
@@ -524,7 +527,6 @@ impl Unifiable {
     } // replace_variables()
 
 } // impl Unifiable
-
 
 /// Recreate logic variables in a vector of goals.
 ///
