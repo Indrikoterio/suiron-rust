@@ -56,18 +56,18 @@ impl Operator {
 
         match &self {
             Operator::And(op) => {
-               if op.len() == 0 { panic!("split_head_tail() - No operands."); }
-               let mut operands = op.clone();
-               let head = operands.remove(0);
-               let tail = Operator::And(operands);
-               return (head, tail);
+                if op.len() == 0 { panic!("split_head_tail() - No operands."); }
+                let mut operands = op.clone();
+                let head = operands.remove(0);
+                let tail = Operator::And(operands);
+                return (head, tail);
             },
             Operator::Or(op) => {
-               if op.len() == 0 { panic!("split_head_tail() - No operands."); }
-               let mut operands = op.clone();
-               let head = operands.remove(0);
-               let tail = Operator::Or(operands);
-               return (head, tail);
+                if op.len() == 0 { panic!("split_head_tail() - No operands."); }
+                let mut operands = op.clone();
+                let head = operands.remove(0);
+                let tail = Operator::Or(operands);
+                return (head, tail);
             },
             _ => { panic!("split_head_tail() - Valid for And and Or operators only."); },
         }
