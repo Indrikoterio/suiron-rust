@@ -130,9 +130,7 @@ impl Goal {
     pub fn replace_variables(&self, ss: &SubstitutionSet) -> Unifiable {
 
         match self {
-            Goal::ComplexGoal(cmplx) => {
-                return cmplx.replace_variables(&ss);
-            },
+            Goal::ComplexGoal(cmplx) => { return cmplx.replace_variables(&ss); },
             _ => { panic!("replace_variables() - Not a complex goal."); }
         }
 
