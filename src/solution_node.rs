@@ -286,8 +286,7 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                         let body = rule.get_body();
                         if body == Goal::Nil { return Some(ss); }
                         let child_sn = make_solution_node(Rc::new(body),
-                                                          sn_ref.kb,
-                                                          ss,
+                                                          sn_ref.kb, ss,
                                                           Rc::clone(&sn));
                         sn_ref.child = Some(Rc::clone(&child_sn));
                         let child_solution = next_solution(child_sn);
