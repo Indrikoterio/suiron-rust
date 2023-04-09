@@ -29,7 +29,7 @@ use super::substitution_set::*;
 pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                              -> Option<Rc<SubstitutionSet<'a>>> {
 
-    let sn_ref = sn.borrow_mut(); // Get a mutable reference.
+    let mut sn_ref = sn.borrow_mut(); // Get a mutable reference.
 
     // Check for the tail solution.
     if let Some(tail_sn) = &sn_ref.tail_sn {
@@ -38,12 +38,10 @@ pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
         }
     }
 
-    let head_sn = match &sn_ref.head_sn {
+    let mut solution = match &sn_ref.head_sn {
         None => { return None; },
-        Some(head_sn) => { head_sn },
+        Some(head_sn) => { next_solution(Rc::clone(&head_sn)) },
     };
-
-    let mut solution = next_solution(Rc::clone(&head_sn));
 
     loop {
 
@@ -64,15 +62,19 @@ pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                         let tail_sn = make_solution_node(Rc::new(tail_goal),
                                                          sn_ref.kb, ss,
                                                          Rc::clone(&sn));
+                        sn_ref.tail_sn = Some(Rc::clone(&tail_sn));
                         let tail_solution = next_solution(Rc::clone(&tail_sn));
                         if tail_solution.is_some() { return tail_solution; }
                     },
-                }
+                } // match
             },
         } // match solution
 
         // Try another solution.
-        solution = next_solution(Rc::clone(&head_sn));
+        solution = match &sn_ref.head_sn {
+            None => { return None; },
+            Some(head_sn) => { next_solution(Rc::clone(&head_sn)) },
+        };
 
     } // loop
 
