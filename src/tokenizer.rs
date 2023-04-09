@@ -451,9 +451,9 @@ fn token_tree_to_goal(token: Token) -> Result<Goal, String> {
                             Err(err) => { return Err(err); },
                         }
                     }
-                    let op = Operator::Or(operands);
-                    return Ok(Goal::OperatorGoal(op));
                 } // for child...
+                let op = Operator::Or(operands);
+                return Ok(Goal::OperatorGoal(op));
             };
 
             if token_type == TokenType::Group {
