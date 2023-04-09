@@ -62,9 +62,8 @@ pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                         // Tail solution node has to be an And solution node.
                         let tail_goal = Goal::OperatorGoal(tail.clone());
                         let tail_sn = make_solution_node(Rc::new(tail_goal),
-                                                        sn_ref.kb,
-                                                        ss,
-                                                        Rc::clone(&sn));
+                                                         sn_ref.kb, ss,
+                                                         Rc::clone(&sn));
                         let tail_solution = next_solution(Rc::clone(&tail_sn));
                         if tail_solution.is_some() { return tail_solution; }
                     },
@@ -95,7 +94,7 @@ pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
 pub fn next_solution_or<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                             -> Option<Rc<SubstitutionSet<'a>>> {
 
-    let sn_ref = sn.borrow_mut(); // Get a mutable reference.
+    let mut sn_ref = sn.borrow_mut(); // Get a mutable reference.
 
     // Check for the tail solution.
     if let Some(tail_sn) = &sn_ref.tail_sn {
@@ -125,10 +124,10 @@ pub fn next_solution_or<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
             let tail_goal = Goal::OperatorGoal(tail.clone());
             let ss = Rc::clone(&sn_ref.ss);
             let tail_sn = make_solution_node(Rc::new(tail_goal),
-                                            sn_ref.kb,
-                                            ss,
-                                            Rc::clone(&sn));
-            return next_solution(Rc::clone(&tail_sn));
+                                             sn_ref.kb, ss,
+                                             Rc::clone(&sn));
+            sn_ref.tail_sn = Some(Rc::clone(&tail_sn));
+            return next_solution(tail_sn);
         },
     }
 
