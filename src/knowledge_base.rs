@@ -27,6 +27,50 @@ use super::logic_var::*;
 
 pub type KnowledgeBase = HashMap<String, Vec<Rule>>;
 
+/// Makes a rule.
+///
+/// Rules consist of a head term and a body goal: head :- body.
+///
+/// See also: [parse_rule()](../rule/fn.parse_rule.html)
+///
+/// # Note
+/// The head of a rule must be Unifiable::SComplex, but this
+/// function does not check.
+/// # Usage
+/// ```
+/// use suiron::*;
+///
+/// let cmplx = parse_complex("father($X, $Y)").unwrap();
+/// let and_goal = parse_subgoal("parent($X, $Y), male($X)").unwrap();
+/// let rule = make_rule(cmplx, and_goal);
+/// println!("{}", rule);   // Prints: father($X, $Y) :- parent($X, $Y), male($X).
+/// ```
+pub fn make_rule(head: Unifiable, body: Goal) -> Rule {
+    Rule{ head, body }
+}
+
+/// Makes a fact.
+///
+/// Facts and Rules use the same structure, [Rule](../rule/struct.Rule.html).
+/// For facts, the body is Goal::Nil.
+///
+/// See also: [parse_rule()](../rule/fn.parse_rule.html)
+///
+/// # Note
+/// The head term of a fact must be Unifiable::SComplex, but
+/// this function does not check.
+/// # Usage
+/// ```
+/// use suiron::*;
+///
+/// let cmplx = parse_complex("music(Moby, Whispering Wind)").unwrap();
+/// let fact = make_fact(cmplx);
+/// println!("{}", fact);   // Prints: music(Moby, Whispering Wind).
+/// ```
+pub fn make_fact(head: Unifiable) -> Rule {
+    Rule{ head, body: Goal::Nil }
+}
+
 /// Adds facts and rules to a knowledge base.
 ///
 /// # Arguments
@@ -59,7 +103,6 @@ pub fn add_rules(kb: &mut KnowledgeBase, rules: Vec<Rule>) {
     } // for
 } // add_rules()
 
-
 /// Counts the number of facts and rules for the given predicate.
 ///
 /// When the maximum execution time has been exceeded, this function returns 0.<br>
@@ -87,7 +130,6 @@ pub fn count_rules(kb: &KnowledgeBase, predicate_name: &str) -> usize {
     }
 
 } // count_rules()
-
 
 /// Fetches a rule (or fact) from the knowledge base.
 ///
@@ -130,7 +172,6 @@ pub fn get_rule(kb: &KnowledgeBase, predicate_name: &str, index: usize) -> Rule 
     } // match
 
 } // get_rule()
-
 
 /// Formats the knowledge base for display. Use for debugging.
 ///
