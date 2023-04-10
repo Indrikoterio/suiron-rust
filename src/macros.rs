@@ -16,6 +16,8 @@
 //! Creates an And operator from a list of goals.<br>
 //! [operator_or!](../macro.operator_or.html) -
 //! Creates an Or operator from a list of terms.<br>
+//! [query!](../macro.query.html) -
+//! Creates a query from a list of terms.<br>
 //! [rc_cell!](../macro.rc_cell.html) -
 //! Creates a smart pointer to mutable data.<br>
 //! [scomplex!](../macro.scomplex.html) -
@@ -23,7 +25,8 @@
 //! [slist!](../macro.slist.html) - Builds a Suiron list.<br>
 //! [str_to_chars!](../macro.str_to_chars.html) -
 //! Converts a string slice to a vector of characters.<br>
-//!
+//! [unify](../macro.unify.html)
+//! Creates a Unify goal (=).
 
 /// Constructs one node of a singly linked list.
 ///
@@ -185,12 +188,13 @@ macro_rules! atom {
 /// Creates a logic variable from a string slice and an optional ID.
 ///
 /// Suiron variables are similar to Prolog variables, except that the
-/// name begins with a dollar sign.
+/// names begin with a dollar sign.<br>
+/// For example:
 /// <blockquote>
-/// [1, 2, 3, 4] = [$H | $T]
+/// [1, 2, 3, 4] = [$Head | $Tail]
 /// </blockquote>
 ///
-/// # Note
+/// # Notes
 /// * Logic variable names should begin with a dollar sign followed by
 /// a letter (eg. $Age), but this macro does not check.
 /// * If the ID argument is missing, it is set to 0 by default.
@@ -275,7 +279,6 @@ macro_rules! scomplex {
     );
 } // scomplex!
 
-
 /// Creates an And operator.
 ///
 /// The [And](../suiron/operator/enum.Operator.html#variant.And)
@@ -286,7 +289,7 @@ macro_rules! scomplex {
 /// parent($X, $Z), parent($Z, $Y), male($X)
 /// </blockquote>
 ///
-/// represents 'parent and parent and male':
+/// represents 'parent And parent And male':
 ///
 /// # Arguments
 /// * list of [Goals](../suiron/goal/enum.Goal.html)
@@ -296,9 +299,10 @@ macro_rules! scomplex {
 /// ```
 /// use suiron::*;
 ///
-/// let g1 = parse_subgoal("parent($GF, $P)").unwrap();
-/// let g2 = parse_subgoal("parent($P, $Ch)").unwrap();
-/// let g3 = parse_subgoal("male($GF)").unwrap();
+/// // parent($Grandfather, $P), parent($P, $Child), male($Grandfather)
+/// let g1 = parse_subgoal("parent($Grandfather, $P)").unwrap();
+/// let g2 = parse_subgoal("parent($P, $Child)").unwrap();
+/// let g3 = parse_subgoal("male($Grandfather)").unwrap();
 /// let the_and = operator_and!(g1, g2, g3);
 /// ```
 #[macro_export]
@@ -318,7 +322,7 @@ macro_rules! operator_and {
 /// mother($P, $C); father($P, $C)
 /// </blockquote>
 ///
-/// means 'mother or father'.
+/// means 'mother Or father'.
 ///
 /// # Arguments
 /// * list of [Goals](../suiron/goal/enum.Goal.html)
@@ -328,8 +332,9 @@ macro_rules! operator_and {
 /// ```
 /// use suiron::*;
 ///
-/// let g1 = parse_subgoal("father($X, $Y)").unwrap();
-/// let g2 = parse_subgoal("mother($X, $Y)").unwrap();
+/// // mother($X, $Y); father($X, $Y)
+/// let g1 = parse_subgoal("mother($X, $Y)").unwrap();
+/// let g2 = parse_subgoal("father($X, $Y)").unwrap();
 /// let the_or = operator_or!(g1, g2);
 /// ```
 #[macro_export]
@@ -366,10 +371,12 @@ macro_rules! chars_to_string {
     ($chrs:expr) => { $chrs.iter().collect::<String>() };
 }
 
-/// Creates an empty substitution set, pointed to by an Rc-pointer.
+/// Creates an empty
+/// [substitution set](../suiron/substitution_set/index.html),
+/// pointed to by an Rc-pointer.
 ///
 /// # Return
-/// * Rc&lt;SubstitutionSet&gt;
+/// * Rc&lt;[SubstitutionSet](../suiron/substitution_set/type.SubstitutionSet.html)&gt;
 /// # Usage
 /// ```
 /// use std::rc::Rc;
@@ -386,6 +393,9 @@ macro_rules! empty_ss {
 ///
 /// rc_cell!(data) is equivalent to Rc::new(RefCell::new(data)).
 ///
+/// # Note
+/// Rc and RefCell must be imported, as shown below.
+///
 /// # Usage
 /// ```
 /// use std::rc::Rc;
@@ -394,9 +404,67 @@ macro_rules! empty_ss {
 ///
 /// let data = atom!("Fawlty Towers");
 /// let r = rc_cell!(data);
-/// println!("{:?}", r);  // Prints: RefCell { value: Atom("Fawlty Towers") }
+/// println!("{:?}", r.borrow());  // Prints: Atom("Fawlty Towers") }
 /// ```
 #[macro_export]
 macro_rules! rc_cell {
     ($data:expr) => { Rc::new(RefCell::new($data)) };
+}
+
+/// Creates a query from a list of terms.
+///
+/// A query is a [Goal](../suiron/goal/index.html), a logic expression to be solved.
+/// It has the same form as a
+/// [complex term](../suiron/unifiable/enum.Unifiable.html#variant.SComplex),
+/// consisting of a functor with arguments (terms) enclosed in parentheses:
+/// `functor(term1, term2, term3)`.
+///
+/// The functor must be an
+/// [atom](../suiron/unifiable/enum.Unifiable.html#variant.Atom),
+/// but a term can be any [unifiable term](../suiron/unifiable/enum.Unifiable.html).
+///
+/// This utility calls [make_query()](../suiron/s_complex/fn.make_query.html),
+/// which [clears](../suiron/logic_var/fn.clear_id.html) the logic variable ID,
+/// and [recreates](../suiron/unifiable/enum.Unifiable.html#method.recreate_variables)
+/// all logic variables within the query.
+///
+/// The macro returns an Rc pointer to the newly created query, which can be
+/// passed to the function [make_base_node()](../suiron/goal/fn.make_base_node.html).
+///
+/// See also: [parse_query()](../suiron/s_complex/fn.parse_query.html)
+///
+/// # Usage
+/// ```
+/// let kb = test_kb();
+/// let functor = atom!("loves");
+/// let who = logic_var!("$Who");
+/// let penny = atom!("Penny");
+///
+/// // Query is: loves($Who, Penny).
+/// let query = query!(functor, who, penny);
+/// let base_node = make_base_node(Rc::clone(&query), &kb);
+/// println!("{}", solve(base_node));   // Prints: $Who = Leonard
+/// ```
+#[macro_export]
+macro_rules! query {
+    ($($term:expr),*) => (
+        Rc::new(make_query((vec!($($term),*))))
+    );
+}
+
+/// Creates a Unify goal.
+///
+/// Calling `unify!($X, 7)` in Rust is equivalent to `$X = 7` in Suiron source code.
+///
+/// # Usage
+/// ```
+/// let x = logic_var!(next_id(), "$X");
+/// let number = SInteger(7);
+/// let goal = unify!(x, number);   // Goal is: $X = 7
+///
+#[macro_export]
+macro_rules! unify {
+    ($left:expr, $right:expr) => {
+        Goal::BuiltInGoal(BuiltInPredicate::Unify(vec![$left, $right]))
+    };
 }
