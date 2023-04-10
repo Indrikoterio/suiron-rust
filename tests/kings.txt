@@ -1,0 +1,28 @@
+# Test program
+male(Godwin).
+male(Tostig).
+male(Harold II).
+male(Skule).
+male(Harold).
+
+female(Gytha).
+female(Judith).
+female(Gudrun).
+female(Ealdgyth).
+female(Edith).
+
+parent(Godwin, Harold II).   % King of England
+parent(Godwin, Tostig).
+parent(Godwin, Edith).
+parent(Gytha, Harold II).
+parent(Gytha, Tostig).
+parent(Gytha, Edith).
+parent(Tostig, Skule).
+parent(Judith, Skule).
+parent(Harold II, Harold).
+parent(Ealdgyth, Harold).
+
+father($X, $Y) :- parent($X, $Y), male($X).
+mother($X, $Y) :- parent($X, $Y), female($X).
+grandmother($X, $Y) :- parent($X, $Z), parent($Z, $Y), female($X).
+grandfather($X, $Y) :- parent($X, $Z), parent($Z, $Y), male($X).
