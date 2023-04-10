@@ -245,7 +245,7 @@ pub fn validate_complex(to_parse: &str, chrs: &Vec<char>) -> Option<String> {
 /// * `to_parse` - string to parse
 /// # Return
 /// * `Result` -
-/// Ok([Goals](../goal/enum.Goal.html))
+/// Ok([Goal](../goal/enum.Goal.html))
 /// or Err(message)
 ///
 /// # Usage
