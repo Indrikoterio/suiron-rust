@@ -133,7 +133,6 @@ pub fn solve_all<'a>(sn: Rc<RefCell<SolutionNode<'a>>>) -> Vec<String> {
 /// # Usage
 /// ```
 /// use std::rc::Rc;
-///
 /// use suiron::*;
 ///
 /// let kb = test_kb();
@@ -174,6 +173,7 @@ pub fn format_solution(query: &Goal, result: &Unifiable) -> String {
     } // if
     return out;
 } // format_solution()
+
 
 /// Gets the environment variable RUST_MIN_STACK.
 ///
