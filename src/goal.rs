@@ -188,6 +188,7 @@ impl Goal {
     /// # Usage
     /// ```
     /// use suiron::*;
+    /// use std::rc::Rc;
     ///
     /// let kb = test_kb();
     /// let query = parse_query("loves(Penny, $Whom)").unwrap();
