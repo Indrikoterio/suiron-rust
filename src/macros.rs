@@ -435,6 +435,9 @@ macro_rules! rc_cell {
 ///
 /// # Usage
 /// ```
+/// use std::rc::Rc;
+/// use suiron::*;
+///
 /// let kb = test_kb();
 /// let functor = atom!("loves");
 /// let who = logic_var!("$Who");
@@ -458,6 +461,8 @@ macro_rules! query {
 ///
 /// # Usage
 /// ```
+/// use suiron::*;
+///
 /// let x = logic_var!(next_id(), "$X");
 /// let number = SInteger(7);
 /// let goal = unify!(x, number);   // Goal is: $X = 7
