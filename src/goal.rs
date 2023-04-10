@@ -173,7 +173,58 @@ impl Goal {
         } // match
     } // key()
 
+    /// Gets a ground term of a query-goal.
+    ///
+    /// This method is useful for getting the results of a query.
+    ///
+    /// # Arguments
+    /// * `self`
+    /// * `index` - index of term
+    /// * `ss` - [SubstitutionSet](../substitution_set/index.html)
+    /// (containing solution of query)
+    /// # Returns
+    /// * `Option` - Some([Unifiable](../unifiable/enum.Unifiable.html)) or None
+    ///
+    /// # Usage
+    /// ```
+    /// use suiron::*;
+    ///
+    /// let kb = test_kb();
+    /// let query = parse_query("loves(Penny, $Whom)").unwrap();
+    /// let query = Rc::new(query);
+    /// let base_node = make_base_node(Rc::clone(&query), &kb);
+    /// let solution = next_solution(base_node);
+    ///
+    /// match solution {
+    ///    Some(ss) => {
+    ///        // Get the result.
+    ///        // The index of the variable $Whom is 2.
+    ///        match query.get_ground_term(2, ss) {
+    ///            Some(result) => { println!("{}", result); },
+    ///            None => { println!("No solution."); },
+    ///        }
+    ///    },
+    ///    None => { println!("No solution."); },
+    /// } // match solution
+    /// // Prints: Leonard
+    /// ```
+    pub fn get_ground_term<'a>(&self, index: usize,
+                               ss: Rc<SubstitutionSet<'a>>) -> Option<Unifiable> {
+        match self {
+            Goal::ComplexGoal(Unifiable::SComplex(terms)) => {
+                let term = terms[index].clone();
+                match get_binding(&term, &ss) {
+                    Some(term) => { Some(term.clone()) },
+                    None => { None },
+                }
+            },
+            _ => None,
+        } // match
+
+    } // get_ground_term
+
 } // impl Goal
+
 
 /// Makes a base solution node for a proof tree.
 ///
