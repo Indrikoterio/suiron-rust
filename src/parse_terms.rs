@@ -6,6 +6,7 @@ use super::logic_var::*;
 use super::s_complex::*;
 use super::unifiable::{*, Unifiable::*};
 use super::built_in_functions::*;
+use super::parse_goals::*;
 
 use crate::atom;
 use crate::str_to_chars;
@@ -357,6 +358,42 @@ pub fn parse_term(to_parse: &str) -> Result<Unifiable, String> {
     let mut has_period    = false;
 
     let chrs = str_to_chars!(s);
+
+    // First, let's check for an arithmetic function with an infix,
+    // such as $X + 100 or $X / 100.
+    let (infix, index) = identify_infix(&chrs);
+
+    if infix == Infix::Plus || infix == Infix::Minus ||
+       infix == Infix::Multiply || infix == Infix::Divide {
+
+        let (left, right) = match get_left_and_right(chrs, index, 1) {
+            Ok((left, right)) => (left, right),
+            Err(s) => return Err(s),
+        };
+
+        let terms = vec![left, right];
+
+        let sfunc = match infix {
+            Infix::Plus => {
+                Unifiable::SFunction{name: "add".to_string(), terms}
+            },
+            Infix::Minus => {
+                Unifiable::SFunction{name: "subtract".to_string(), terms}
+            },
+            Infix::Multiply => {
+                Unifiable::SFunction{name: "multiply".to_string(), terms}
+            },
+            Infix::Divide => {
+                Unifiable::SFunction{name: "divide".to_string(), terms}
+            },
+            _ => {
+                let s = format!("parse_term() - Invalid infix {}", infix);
+                return Err(s);
+            },
+        };
+        return Ok(sfunc);
+    }
+
     for ch in chrs {
         // QUESTION: Should this function test for backslash?
         if ch != '\\' {
