@@ -380,6 +380,26 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
             let (left, right) = get_left_and_right(chrs, index, 2);
             pred = BuiltInPredicate::GreaterThanOrEqual(vec![left, right]);
         }
+        else
+        if infix == Infix::Add {
+            let (left, right) = get_left_and_right(chrs, index, 1);
+            pred = BuiltInPredicate::Add(vec![left, right]);
+        }
+        else
+        if infix == Infix::Subtract {
+            let (left, right) = get_left_and_right(chrs, index, 1);
+            pred = BuiltInPredicate::Subtract(vec![left, right]);
+        }
+        else
+        if infix == Infix::Multiply {
+            let (left, right) = get_left_and_right(chrs, index, 1);
+            pred = BuiltInPredicate::Multiply(vec![left, right]);
+        }
+        else
+        if infix == Infix::Divide{
+            let (left, right) = get_left_and_right(chrs, index, 1);
+            pred = BuiltInPredicate::Divide(vec![left, right]);
+        }
         else { panic!("parse_subgoal() - Unknown infix: {:?}", infix); }
 
         return Ok(Goal::BuiltInGoal(pred));
