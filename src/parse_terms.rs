@@ -333,7 +333,9 @@ pub fn check_quotes(to_check: &str, count: usize) -> Option<String> {
 /// parse_term(\"animal(horse, mammal)\") ➔
 /// [SComplex](../unifiable/enum.Unifiable.html#variant.SComplex)<br>
 /// parse_term(\"[a, b, c]\") ➔
-/// [SLinkedList](../unifiable/enum.Unifiable.html#variant.SLinkedList)
+/// [SLinkedList](../unifiable/enum.Unifiable.html#variant.SLinkedList)<br>
+/// parse_term(\"$X + 6\") ➔
+/// [SFunction](../unifiable/enum.Unifiable.html#variant.SFunction)
 ///
 /// # Arguments
 /// * `to_parse` - string to parse
