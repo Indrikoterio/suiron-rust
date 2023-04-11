@@ -28,6 +28,14 @@ pub enum Infix {
     GreaterThanOrEqual,
     /// &lt;=
     LessThanOrEqual,
+    /// &plus;
+    Add,
+    /// &minus;
+    Subtract,
+    /// &#42;
+    Multiply,
+    /// &#47;
+    Divide,
 }
 
 /// Determines the indices of parentheses in a goal or query.
@@ -132,7 +140,8 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
                 }
                 j += 1;
             }
-        } else if c1 == '(' {
+        }
+        else if c1 == '(' {
             // Skip past text within parentheses: (...)
             let mut j = i + 1;
             while j < length {
@@ -143,7 +152,8 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
                 }
                 j += 1;
             }
-        } else {
+        }
+        else {
             // Previous character must be space.
             if prev != ' ' {
                 prev = c1;
@@ -163,10 +173,12 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
                     if c3 == ' ' {
                         return (Infix::LessThanOrEqual, i);
                     }
-                } else if c2 == ' ' {
+                }
+                else if c2 == ' ' {
                     return (Infix::LessThan, i);
                 }
-            } else if c1 == '>' {
+            }
+            else if c1 == '>' {
                 let c2 = chrs[i + 1];
                 if c2 == '=' {
                     // Bad:  $X >=1
@@ -176,10 +188,12 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
                     if c3 == ' ' {
                         return (Infix::GreaterThanOrEqual, i);
                     }
-                } else if c2 == ' ' {
+                }
+                else if c2 == ' ' {
                     return (Infix::GreaterThan, i);
                 }
-            } else if c1 == '=' {
+            }
+            else if c1 == '=' {
                 let c2 = chrs[i + 1];
                 if c2 == '=' {
                     // Bad:  $X ==1
@@ -189,10 +203,24 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
                     if c3 == ' ' {
                         return (Infix::Equal, i);
                     }
-                } else if c2 == ' ' {
+                }
+                else if c2 == ' ' {
                     return (Infix::Unify, i);
                 }
             }
+            else if c1 == '+' {
+                if chrs[i + 1] == ' ' { return (Infix::Add, i); }
+            }
+            else if c1 == '-' {
+                if chrs[i + 1] == ' ' { return (Infix::Subtract, i); }
+            }
+            else if c1 == '*' {
+                if chrs[i + 1] == ' ' { return (Infix::Multiply, i); }
+            }
+            else if c1 == '/' {
+                if chrs[i + 1] == ' ' { return (Infix::Divide, i); }
+            }
+
         } // else
 
         prev = c1;
