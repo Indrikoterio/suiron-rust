@@ -29,9 +29,9 @@ pub enum Infix {
     /// &lt;=
     LessThanOrEqual,
     /// &plus;
-    Add,
+    Plus,
     /// &minus;
-    Subtract,
+    Minus,
     /// &#42;
     Multiply,
     /// &#47;
@@ -209,10 +209,10 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
                 }
             }
             else if c1 == '+' {
-                if chrs[i + 1] == ' ' { return (Infix::Add, i); }
+                if chrs[i + 1] == ' ' { return (Infix::Plus, i); }
             }
             else if c1 == '-' {
-                if chrs[i + 1] == ' ' { return (Infix::Subtract, i); }
+                if chrs[i + 1] == ' ' { return (Infix::Minus, i); }
             }
             else if c1 == '*' {
                 if chrs[i + 1] == ' ' { return (Infix::Multiply, i); }
@@ -246,7 +246,8 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
 /// * `size`  - size of infix
 /// # Return
 /// * `(Unifiable, Unifiable)`
-fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize) -> (Unifiable, Unifiable) {
+fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize)
+                      -> (Unifiable, Unifiable) {
     let arg1 = &chrs[0..index];
     let arg2 = &chrs[index + size..];
     let term1: Unifiable;
@@ -281,7 +282,8 @@ fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize) -> (Unifiable,
 /// # Return
 /// * `(String, String)`
 ///
-fn split_complex_term(complex: Vec<char>, index1: usize, index2: usize) -> (String, String) {
+fn split_complex_term(complex: Vec<char>, index1: usize, index2: usize)
+                      -> (String, String) {
 
       let functor = &complex[0..index1];
       let terms   = &complex[index1 + 1..index2];
@@ -349,58 +351,47 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
     let (infix, index) = identify_infix(&chrs);
     if infix != Infix::None {
 
-        let pred: BuiltInPredicate;
+        // An infix can be 1 or 2 characters, eg: <, <=
+        // The last parameter of get_left_and_right() is the
+        // size of the infix. To avoid repeating this call
+        // for each infix, it is called here with an infix size
+        // of 2. Since all infixes must be followed by a space,
+        // this shouldn't be a problem.
+        let (left, right) = get_left_and_right(chrs, index, 2);
 
-        if infix == Infix::Unify {
-            let (left, right) = get_left_and_right(chrs, index, 1);
-            pred = BuiltInPredicate::Unify(vec![left, right]);
-        }
-        else
-        if infix == Infix::Equal {
-            let (left, right) = get_left_and_right(chrs, index, 2);
-            pred = BuiltInPredicate::Equal(vec![left, right]);
-        }
-        else
-        if infix == Infix::LessThan {
-            let (left, right) = get_left_and_right(chrs, index, 1);
-            pred = BuiltInPredicate::LessThan(vec![left, right]);
-        }
-        else
-        if infix == Infix::LessThanOrEqual {
-            let (left, right) = get_left_and_right(chrs, index, 2);
-            pred = BuiltInPredicate::LessThanOrEqual(vec![left, right]);
-        }
-        else
-        if infix == Infix::GreaterThan {
-            let (left, right) = get_left_and_right(chrs, index, 1);
-            pred = BuiltInPredicate::GreaterThan(vec![left, right]);
-        }
-        else
-        if infix == Infix::GreaterThanOrEqual {
-            let (left, right) = get_left_and_right(chrs, index, 2);
-            pred = BuiltInPredicate::GreaterThanOrEqual(vec![left, right]);
-        }
-        else
-        if infix == Infix::Add {
-            let (left, right) = get_left_and_right(chrs, index, 1);
-            pred = BuiltInPredicate::Add(vec![left, right]);
-        }
-        else
-        if infix == Infix::Subtract {
-            let (left, right) = get_left_and_right(chrs, index, 1);
-            pred = BuiltInPredicate::Subtract(vec![left, right]);
-        }
-        else
-        if infix == Infix::Multiply {
-            let (left, right) = get_left_and_right(chrs, index, 1);
-            pred = BuiltInPredicate::Multiply(vec![left, right]);
-        }
-        else
-        if infix == Infix::Divide{
-            let (left, right) = get_left_and_right(chrs, index, 1);
-            pred = BuiltInPredicate::Divide(vec![left, right]);
-        }
-        else { panic!("parse_subgoal() - Unknown infix: {:?}", infix); }
+        let pred = match infix {
+            Infix::Unify => {
+                BuiltInPredicate::Unify(vec![left, right])
+            },
+            Infix::Equal => {
+                BuiltInPredicate::Equal(vec![left, right])
+            },
+            Infix::LessThan => {
+                BuiltInPredicate::LessThan(vec![left, right])
+            },
+            Infix::LessThanOrEqual => {
+                BuiltInPredicate::LessThanOrEqual(vec![left, right])
+            },
+            Infix::GreaterThan => {
+                BuiltInPredicate::GreaterThan(vec![left, right])
+            },
+            Infix::GreaterThanOrEqual => {
+                BuiltInPredicate::GreaterThanOrEqual(vec![left, right])
+            },
+            Infix::Plus => {
+                BuiltInPredicate::Add(vec![left, right])
+            },
+            Infix::Minus => {
+                BuiltInPredicate::Subtract(vec![left, right])
+            },
+            Infix::Multiply => {
+                BuiltInPredicate::Multiply(vec![left, right])
+            },
+            Infix::Divide => {
+                BuiltInPredicate::Divide(vec![left, right])
+            },
+            Infix::None => { panic!("parse_subgoal() - Invalid infix."); },
+        }; // let match
 
         return Ok(Goal::BuiltInGoal(pred));
 
