@@ -1,6 +1,8 @@
 //! Utilities for parsing goals and queries.
 //!
 
+use std::fmt;
+
 use crate::str_to_chars;
 use crate::chars_to_string;
 
@@ -245,22 +247,22 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
 /// * `index` - index of infix in chrs
 /// * `size`  - size of infix
 /// # Return
-/// * `(Unifiable, Unifiable)`
-fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize)
-                      -> (Unifiable, Unifiable) {
+/// * `Result` - Ok((Unifiable, Unifiable)) or Err()`
+pub fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize)
+                      -> Result<(Unifiable, Unifiable), String> {
     let arg1 = &chrs[0..index];
     let arg2 = &chrs[index + size..];
     let term1: Unifiable;
     let term2: Unifiable;
     match parse_term(&chars_to_string!(arg1)) {
         Ok(t) => { term1 = t; },
-        Err(err) => { panic!("{}", err); },
+        Err(err) => return Err(err),
     }
     match parse_term(&chars_to_string!(arg2)) {
         Ok(t) => { term2 = t; },
-        Err(err) => { panic!("{}", err); },
+        Err(err) => return Err(err),
     }
-    return (term1, term2);
+    return Ok((term1, term2));
 } // get_left_and_right
 
 
@@ -357,40 +359,35 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
         // for each infix, it is called here with an infix size
         // of 2. Since all infixes must be followed by a space,
         // this shouldn't be a problem.
-        let (left, right) = get_left_and_right(chrs, index, 2);
+        let (left, right) = match get_left_and_right(chrs, index, 2) {
+            Ok((left, right)) => (left, right),
+            Err(s) => return Err(s),
+        };
 
+        let v = vec![left, right];
         let pred = match infix {
             Infix::Unify => {
-                BuiltInPredicate::Unify(vec![left, right])
+                BuiltInPredicate::Unify(v)
             },
             Infix::Equal => {
-                BuiltInPredicate::Equal(vec![left, right])
+                BuiltInPredicate::Equal(v)
             },
             Infix::LessThan => {
-                BuiltInPredicate::LessThan(vec![left, right])
+                BuiltInPredicate::LessThan(v)
             },
             Infix::LessThanOrEqual => {
-                BuiltInPredicate::LessThanOrEqual(vec![left, right])
+                BuiltInPredicate::LessThanOrEqual(v)
             },
             Infix::GreaterThan => {
-                BuiltInPredicate::GreaterThan(vec![left, right])
+                BuiltInPredicate::GreaterThan(v)
             },
             Infix::GreaterThanOrEqual => {
-                BuiltInPredicate::GreaterThanOrEqual(vec![left, right])
+                BuiltInPredicate::GreaterThanOrEqual(v)
             },
-            Infix::Plus => {
-                BuiltInPredicate::Add(vec![left, right])
+            _ => {
+                let s = format!("parse_subgoal() - Invalid syntax: {}", s);
+                return Err(s);
             },
-            Infix::Minus => {
-                BuiltInPredicate::Subtract(vec![left, right])
-            },
-            Infix::Multiply => {
-                BuiltInPredicate::Multiply(vec![left, right])
-            },
-            Infix::Divide => {
-                BuiltInPredicate::Divide(vec![left, right])
-            },
-            Infix::None => { panic!("parse_subgoal() - Invalid infix."); },
         }; // let match
 
         return Ok(Goal::BuiltInGoal(pred));
@@ -493,6 +490,26 @@ pub fn make_built_in_pred(functor: &str, args: &Vec<Unifiable>) -> Option<Goal> 
     }
     None
 } // make_built_in_pred()
+
+
+
+impl fmt::Display for Infix {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        return match &self {
+            Infix::None => write!(f, "None"),
+            Infix::Unify => write!(f, "="),
+            Infix::Equal => write!(f, "=="),
+            Infix::GreaterThan => write!(f, ">"),
+            Infix::LessThan => write!(f, "<"),
+            Infix::GreaterThanOrEqual => write!(f, ">="),
+            Infix::LessThanOrEqual => write!(f, "<="),
+            Infix::Plus => write!(f, "+"),
+            Infix::Minus => write!(f, "-"),
+            Infix::Multiply => write!(f, "*"),
+            Infix::Divide => write!(f, "/"),
+        };
+    } // fmt
+} // fmt::Display
 
 
 // Formats an error message for indices_of_parentheses().
