@@ -100,7 +100,6 @@ pub fn indices_of_parentheses(goal: &Vec<char>) -> Result<Option<(usize, usize)>
 
 } // indices_of_parentheses
 
-
 /// Determines whether a string contains an infix: >=, ==, etc.
 ///
 /// This function returns the type and index of the
@@ -110,6 +109,10 @@ pub fn indices_of_parentheses(goal: &Vec<char>) -> Result<Option<(usize, usize)>
 ///    $X < 6
 /// </blockquote>
 /// ...contains the `LessThan` infix, at index 3.
+///
+/// This function does not check for arithmetic infixes (+-*/), because
+/// arithmetic is done with built-in functions. See check_arithmetic_infix()
+/// below.
 ///
 /// # Arguments
 /// * `chrs` - vector of chars
@@ -122,7 +125,7 @@ pub fn indices_of_parentheses(goal: &Vec<char>) -> Result<Option<(usize, usize)>
 /// For example, for the the string of characters \" <= \" (double quotes included),
 /// the function will return (Infix::None, 0).
 ///
-pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
+pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
 
     let length = chrs.len();
     let mut prev   = '#';  // not a space
@@ -210,7 +213,83 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
                     return (Infix::Unify, i);
                 }
             }
-            else if c1 == '+' {
+
+        } // else
+
+        prev = c1;
+        i += 1;
+
+    } // while
+
+    return (Infix::None, 0);  // failed to find infix
+
+} // check_infix
+
+/// Determines whether a string contains an arithmetic infix: +, -, *, /
+///
+/// This function returns the type and index of the arithmetic
+/// [infix](../parse_goals/enum.Infix.html).
+/// For example,<br>
+/// <blockquote>
+///     $X * 6
+/// </blockquote>
+/// ...contains the `Multiply` infix, at index 3.
+///
+/// # Arguments
+/// * `chrs` - vector of chars
+/// # Return
+/// * `(infix, index)` - [Infix](../parse_goals/enum.Infix.html)
+///
+/// # Note
+/// * An infix must be preceded and followed by a space. Don't do this:  $X*6
+/// * The function ignores characters between double quotes and parentheses.<br>
+/// For example, for the the string of characters \" * \" (double quotes included),
+/// the function will return (Infix::None, 0).
+///
+pub fn check_arithmetic_infix(chrs: &Vec<char>) -> (Infix, usize) {
+
+    let length = chrs.len();
+    let mut prev   = '#';  // not a space
+
+    let mut i = 0;
+    while i < length {
+
+        // Skip past quoted text: ">>>>>"
+        let c1 = chrs[i];
+        if c1 == '"' {
+            let mut j = i + 1;
+            while j < length  {
+                let c2 = chrs[j];
+                if c2 == '"' {
+                    i = j; break;
+                }
+                j += 1;
+            }
+        }
+        else if c1 == '(' {
+            // Skip past text within parentheses: (...)
+            let mut j = i + 1;
+            while j < length {
+                let c2 = chrs[j];
+                if c2 == ')' {
+                    i = j; break;
+                }
+                j += 1;
+            }
+        }
+        else {
+
+            // Previous character must be space.
+            if prev != ' ' {
+                prev = c1;
+                i += 1;
+                continue;
+            }
+
+            // Bad:  $X =1
+            // Good: $X = 1
+            if i >= (length - 2) { return (Infix::None, 0); }
+            if c1 == '+' {
                 if chrs[i + 1] == ' ' { return (Infix::Plus, i); }
             }
             else if c1 == '-' {
@@ -222,7 +301,6 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
             else if c1 == '/' {
                 if chrs[i + 1] == ' ' { return (Infix::Divide, i); }
             }
-
         } // else
 
         prev = c1;
@@ -232,7 +310,8 @@ pub fn identify_infix(chrs: &Vec<char>) -> (Infix, usize) {
 
     return (Infix::None, 0);  // failed to find infix
 
-} // identify_infix
+} // check_arithmetic_infix
+
 
 /// Gets terms on left and right-hand side of an infix.
 ///
@@ -350,7 +429,7 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
     //--------------------------------------
     // Handle infixes: = > < >= <= == =
 
-    let (infix, index) = identify_infix(&chrs);
+    let (infix, index) = check_infix(&chrs);
     if infix != Infix::None {
 
         // An infix can be 1 or 2 characters, eg: <, <=
@@ -528,7 +607,7 @@ mod test {
     use crate::str_to_chars;
 
     use super::Infix;
-    use super::identify_infix;
+    use super::check_infix;
     use super::indices_of_parentheses;
 
     #[test]
@@ -572,45 +651,45 @@ mod test {
     } // test_indices_of_parentheses()
 
     #[test]
-    fn test_identify_infix() {
+    fn test_check_infix() {
 
         let chrs = str_to_chars!("$X = $Y");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::Unify);
         assert_eq!(ind, 3, "Unify");
 
         let chrs = str_to_chars!("$X =$Y");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::None);
         assert_eq!(ind, 0);
 
         let chrs = str_to_chars!("$X > $Y");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::GreaterThan);
         assert_eq!(ind, 3, "GreaterThan");
 
         let chrs = str_to_chars!("$Age >= 50");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::GreaterThanOrEqual);
         assert_eq!(ind, 5, "GreaterThanOrEqual");
 
         let chrs = str_to_chars!("$Height < 152");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::LessThan);
         assert_eq!(ind, 8, "LessThan");
 
         let chrs = str_to_chars!("$Grade <= 60");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::LessThanOrEqual);
         assert_eq!(ind, 7, "LessThanOrEqual");
 
         let chrs = str_to_chars!("100 == $Score");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::Equal);
         assert_eq!(ind, 4, "Equal");
 
         let chrs = str_to_chars!("\" <= \"");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::None);
         assert_eq!(ind, 0, "Infix between double quotes should be ignored.");
 
@@ -618,32 +697,32 @@ mod test {
         // There must be a space after an infix. Otherwise ignore.
 
         let chrs = str_to_chars!("$X =1");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::None);
         assert_eq!(ind, 0);
 
         let chrs = str_to_chars!("$X <=1");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::None);
         assert_eq!(ind, 0);
 
         let chrs = str_to_chars!("$X >=1");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::None);
         assert_eq!(ind, 0);
 
         let chrs = str_to_chars!("$X ==1");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::None);
         assert_eq!(ind, 0);
 
         let chrs = str_to_chars!("$X <1");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::None);
         assert_eq!(ind, 0);
 
         let chrs = str_to_chars!("$X >1");
-        let (inf, ind) = identify_infix(&chrs);
+        let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::None);
         assert_eq!(ind, 0);
 
