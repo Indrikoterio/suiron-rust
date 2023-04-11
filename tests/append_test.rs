@@ -34,7 +34,7 @@ pub fn test_append() {
 
     let mut kb = KnowledgeBase::new();
 
-    // A lot of this could be done with parse_
+    // A lot of this set-up could be done with parse_
     // functions, but let's do it the hard way.
 
     fn x()   -> Unifiable { logic_var!("$X") }
