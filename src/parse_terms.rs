@@ -1,5 +1,6 @@
 //! Functions for parsing unifiable terms and lists of terms.
 //!
+// Cleve Lendon 2023
 
 use super::s_linked_list::*;
 use super::logic_var::*;
@@ -18,9 +19,10 @@ use crate::chars_to_string;
 /// of [Unifiable](../unifiable/enum.Unifiable.html) terms.
 ///
 /// # Arguments
-/// * `to_parse` - string to parse
+/// * string to parse
 /// # Return
-/// * `Result` - Ok(vector of terms) or Err(message)
+/// * vector of
+/// [Unifiable](../unifiable/enum.Unifiable.html) terms or error message
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -28,8 +30,8 @@ use crate::chars_to_string;
 /// if let Ok(terms) = parse_arguments("Argon, 18") {
 ///     println!("{:?}", terms);
 /// }
+/// // Should print: [Atom("Argon"), SInteger(18)]
 /// ```
-/// Should print: [Atom("Argon"), SInteger(18)]
 pub fn parse_arguments(to_parse: &str) -> Result<Vec<Unifiable>, String> {
 
     let s = to_parse.trim();
@@ -282,18 +284,16 @@ fn make_term(to_parse: &str,
 
 }  // make_term
 
-
-/// Checks validity of double quote marks (\") in a string.
+/// Checks validity of double quote marks in a string.
 ///
-/// An argument may be enclosed in double quotation marks at the beginning
-/// and end, eg. `"Sophie"`. If there are unmatched quotation marks, such as
-/// in `""Sophie"`, an error message will be returned. Otherwise, None is
-/// returned.
+/// An argument may be enclosed in double quotation marks, eg. `"Sophie"`.
+/// If there are unpaired quotation marks, such as in `""Sophie"`, an error
+/// message will be returned. Otherwise, None is returned.
 /// # Arguments
-/// * `to_check` - string to check
-/// * `count` - number of double quotes (previously counted)
+/// * string to check
+/// * number of double quotes in string (previously counted)
 /// # Return
-/// * `Option` - Some(error message) or None
+/// * error message or None
 /// # Usage
 /// Note: In Rust source, double quotes are escaped with a backslash: \\
 /// ```
@@ -302,9 +302,8 @@ fn make_term(to_parse: &str,
 /// if let Some(error_message) = check_quotes("\"\"Sophie\"", 3) {
 ///     println!("{}", error_message);
 /// }
+/// // Should print: check_quotes() - Unmatched quotes: ""Sophie"
 /// ```
-///
-/// The above should print: check_quotes() - Unmatched quotes: \"\"Sophie\"
 pub fn check_quotes(to_check: &str, count: usize) -> Option<String> {
     if count == 0 { return None; }
     if count != 2 {
@@ -338,9 +337,9 @@ pub fn check_quotes(to_check: &str, count: usize) -> Option<String> {
 /// [SFunction](../unifiable/enum.Unifiable.html#variant.SFunction)
 ///
 /// # Arguments
-/// * `to_parse` - string to parse
+/// * string to parse
 /// # Return
-/// * `Result` - Ok([Unifiable](../unifiable/enum.Unifiable.html)) term or Err(message)
+/// * [Unifiable](../unifiable/enum.Unifiable.html) term or error message
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -349,8 +348,8 @@ pub fn check_quotes(to_check: &str, count: usize) -> Option<String> {
 ///     Ok(term) => { println!("{}", term); },
 ///     Err(msg) => { println!("{}", msg); },
 /// }
+/// // Should print: animal(horse, mammal)
 /// ```
-/// Should print: animal(horse, mammal)
 pub fn parse_term(to_parse: &str) -> Result<Unifiable, String> {
 
     let s = to_parse.trim();
