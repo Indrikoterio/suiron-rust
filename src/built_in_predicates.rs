@@ -37,10 +37,6 @@ pub enum BuiltInPredicate {
     GreaterThan(Vec<Unifiable>),
     GreaterThanOrEqual(Vec<Unifiable>),
     Equal(Vec<Unifiable>),
-    Add(Vec<Unifiable>),
-    Subtract(Vec<Unifiable>),
-    Multiply(Vec<Unifiable>),
-    Divide(Vec<Unifiable>),
     Unify(Vec<Unifiable>),
     NL,  // New Line
     Fail,
@@ -104,22 +100,6 @@ impl BuiltInPredicate {
             BuiltInPredicate::LessThanOrEqual(terms) => {
                 let new_terms = recreate_vars_terms(terms, vars);
                 return BuiltInPredicate::LessThanOrEqual(new_terms);
-            },
-            BuiltInPredicate::Add(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Add(new_terms);
-            },
-            BuiltInPredicate::Subtract(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Subtract(new_terms);
-            },
-            BuiltInPredicate::Multiply(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Multiply(new_terms);
-            },
-            BuiltInPredicate::Divide(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Divide(new_terms);
             },
             BuiltInPredicate::PrintList(terms) => {
                 let new_terms = recreate_vars_terms(terms, vars);
