@@ -361,7 +361,7 @@ pub fn parse_term(to_parse: &str) -> Result<Unifiable, String> {
 
     // First, let's check for an arithmetic function with an infix,
     // such as $X + 100 or $X / 100.
-    let (infix, index) = identify_infix(&chrs);
+    let (infix, index) = check_arithmetic_infix(&chrs);
 
     if infix == Infix::Plus || infix == Infix::Minus ||
        infix == Infix::Multiply || infix == Infix::Divide {
