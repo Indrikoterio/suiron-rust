@@ -259,17 +259,11 @@ pub fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize)
                           -> Result<(Unifiable, Unifiable), String> {
     let arg1 = &chrs[0..index];
     let arg2 = &chrs[index + size..];
-    let term1: Unifiable;
-    let term2: Unifiable;
-    match parse_term(&chars_to_string!(arg1)) {
-        Ok(t) => { term1 = t; },
-        Err(err) => return Err(err),
-    }
-    match parse_term(&chars_to_string!(arg2)) {
-        Ok(t) => { term2 = t; },
-        Err(err) => return Err(err),
-    }
+
+    let term1 = parse_term(&chars_to_string!(arg1))?;
+    let term2 = parse_term(&chars_to_string!(arg2))?;
     return Ok((term1, term2));
+
 } // get_left_and_right
 
 
@@ -366,10 +360,7 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
         // for each infix, it is called here with an infix size
         // of 2. Since all infixes must be followed by a space,
         // this shouldn't be a problem.
-        let (left, right) = match get_left_and_right(chrs, index, 2) {
-            Ok((left, right)) => (left, right),
-            Err(s) => return Err(s),
-        };
+        let (left, right) = get_left_and_right(chrs, index, 2)?;
 
         let v = vec![left, right];
 
@@ -424,7 +415,8 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
         Err(err) => { return Err(err); },
     }
 
-    let (functor_str, args_str) = split_complex_term(chrs, left_index, right_index);
+    let (functor_str, args_str) =
+                     split_complex_term(chrs, left_index, right_index);
 
     // Check for time operator.
     if functor_str == "time" {
@@ -439,12 +431,7 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
         }
     }
 
-    let args: Vec<Unifiable>;
-    match parse_arguments(&args_str) {
-        Ok(a) => { args = a; },
-        Err(err) => { return Err(err); },
-    }
-
+    let args = parse_arguments(&args_str)?;
     return Ok(make_goal(&functor_str, args));
 
 } // parse_subgoal
