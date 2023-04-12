@@ -230,54 +230,55 @@ pub fn format_built_in(name: &str, terms: &Vec<Unifiable>) -> String {
     out
 } // format_built_in
 
+
 // Display trait, to display built-in predicates.
 impl fmt::Display for BuiltInPredicate {
 
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self {
+        let out = match &self {
             BuiltInPredicate::Print(args) => {
-                let out = format_built_in("print", args);
-                write!(f, "{}", out)
+                format_built_in("print", args)
+            },
+            BuiltInPredicate::Append(args) => {
+                format_built_in("append", args)
+            },
+            BuiltInPredicate::Functor(args) => {
+                format_built_in("functor", args)
+            },
+            BuiltInPredicate::Include(args) => {
+                format_built_in("include", args)
+            },
+            BuiltInPredicate::Exclude(args) => {
+                format_built_in("exclude", args)
             },
             BuiltInPredicate::PrintList(args) => {
-                let out = format_built_in("print_list", args);
-                write!(f, "{}", out)
+                format_built_in("print_list", args)
             },
             BuiltInPredicate::Unify(args) => {
-                let left = &args[0];
-                let right = &args[1];
-                write!(f, "{} = {}", left, right)
+                format!("{} = {}", &args[0], &args[1])
             },
             BuiltInPredicate::Equal(args) => {
-                let left = &args[0];
-                let right = &args[1];
-                write!(f, "{} == {}", left, right)
+                format!("{} == {}", &args[0], &args[1])
             },
             BuiltInPredicate::LessThan(args) => {
-                let left = &args[0];
-                let right = &args[1];
-                write!(f, "{} < {}", left, right)
+                format!("{} < {}", &args[0], &args[1])
             },
             BuiltInPredicate::LessThanOrEqual(args) => {
-                let left = &args[0];
-                let right = &args[1];
-                write!(f, "{} <= {}", left, right)
+                format!("{} <= {}", &args[0], &args[1])
             },
             BuiltInPredicate::GreaterThan(args) => {
-                let left = &args[0];
-                let right = &args[1];
-                write!(f, "{} > {}", left, right)
+                format!("{} > {}", &args[0], &args[1])
             },
             BuiltInPredicate::GreaterThanOrEqual(args) => {
-                let left = &args[0];
-                let right = &args[1];
-                write!(f, "{} >= {}", left, right)
+                format!("{} >= {}", &args[0], &args[1])
             },
-            BuiltInPredicate::NL => { write!(f, "nl") },
-            BuiltInPredicate::Cut => { write!(f, "!") },
-            BuiltInPredicate::Fail => { write!(f, "fail") },
-            _ => { write!(f, "xxxxx not implemented") },
-        }
+            BuiltInPredicate::NL => { "nl".to_string() },
+            BuiltInPredicate::Cut => { "!".to_string() },
+            BuiltInPredicate::Fail => { "fail".to_string() },
+
+        }; // match
+
+        write!(f, "{}", out)
     }
 } // Display
 
