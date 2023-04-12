@@ -250,10 +250,11 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
 /// let chrs = str_to_chars!("$X < 7");
 /// let (_infix, index) = check_infix(&chrs);
 ///
-/// let (left, right) = match get_left_and_right(chrs, index, 2) {
-///     Ok((left, right)) => (left, right),
-///     Err(_) => { panic!("Handle error."); },
+/// match get_left_and_right(chrs, index, 2) {
+///     Ok((left, right)) => { println!("Left: {left}, Right: {right}");},
+///     Err(err) => { println!("Error: {err}"); },
 /// };
+/// // Prints - Left: $X, Right: 7
 /// ```
 pub fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize)
                           -> Result<(Unifiable, Unifiable), String> {
@@ -555,7 +556,7 @@ mod test {
                     None => { panic!("Could not get indices."); },
                 }
             },
-            Err(msg) => { panic!("{}", msg); }
+            Err(err) => { panic!("{err}"); }
         }
 
         let goal_chr = str_to_chars!("parse");
