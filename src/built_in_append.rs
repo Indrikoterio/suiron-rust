@@ -179,7 +179,7 @@ mod test {
         let args = parse_arguments("3.14159, [A, B, C], 6, $Out").unwrap();
 
         // Make an append() predicate.
-        let append_pred = make_built_in_pred("append", &args).unwrap();
+        let append_pred = make_goal("append", args);
 
         // Recreate variables.
         let mut var_map = VarMap::new();
