@@ -32,12 +32,12 @@ pub enum BuiltInPredicate {
     Include(Vec<Unifiable>),
     Exclude(Vec<Unifiable>),
     PrintList(Vec<Unifiable>),
+    Unify(Vec<Unifiable>),
+    Equal(Vec<Unifiable>),
     LessThan(Vec<Unifiable>),
     LessThanOrEqual(Vec<Unifiable>),
     GreaterThan(Vec<Unifiable>),
     GreaterThanOrEqual(Vec<Unifiable>),
-    Equal(Vec<Unifiable>),
-    Unify(Vec<Unifiable>),
     NL,  // New Line
     Fail,
     Cut,
@@ -68,6 +68,7 @@ impl BuiltInPredicate {
     /// println!("{}", new_print); // Prints: print($X_1, $Y_2)
     /// ```
     pub fn recreate_variables(self, vars: &mut VarMap) -> BuiltInPredicate {
+
         match self {
             BuiltInPredicate::Print(terms) => {
                 let new_terms = recreate_vars_terms(terms, vars);
@@ -76,6 +77,22 @@ impl BuiltInPredicate {
             BuiltInPredicate::Append(terms) => {
                 let new_terms = recreate_vars_terms(terms, vars);
                 return BuiltInPredicate::Append(new_terms);
+            },
+            BuiltInPredicate::Functor(terms) => {
+                let new_terms = recreate_vars_terms(terms, vars);
+                return BuiltInPredicate::Functor(new_terms);
+            },
+            BuiltInPredicate::Include(terms) => {
+                let new_terms = recreate_vars_terms(terms, vars);
+                return BuiltInPredicate::Include(new_terms);
+            },
+            BuiltInPredicate::Exclude(terms) => {
+                let new_terms = recreate_vars_terms(terms, vars);
+                return BuiltInPredicate::Exclude(new_terms);
+            },
+            BuiltInPredicate::PrintList(terms) => {
+                let new_terms = recreate_vars_terms(terms, vars);
+                return BuiltInPredicate::PrintList(new_terms);
             },
             BuiltInPredicate::Unify(terms) => {
                 let new_terms = recreate_vars_terms(terms, vars);
@@ -101,14 +118,9 @@ impl BuiltInPredicate {
                 let new_terms = recreate_vars_terms(terms, vars);
                 return BuiltInPredicate::LessThanOrEqual(new_terms);
             },
-            BuiltInPredicate::PrintList(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::PrintList(new_terms);
-            },
             BuiltInPredicate::NL   => { BuiltInPredicate::NL },
             BuiltInPredicate::Fail => { BuiltInPredicate::Fail },
             BuiltInPredicate::Cut  => { BuiltInPredicate::Cut },
-            _ => { panic!("recreate_variables() - Not yet implemented."); },
         }
     } // recreate_variables()
 
@@ -225,6 +237,10 @@ impl fmt::Display for BuiltInPredicate {
         match &self {
             BuiltInPredicate::Print(args) => {
                 let out = format_built_in("print", args);
+                write!(f, "{}", out)
+            },
+            BuiltInPredicate::PrintList(args) => {
+                let out = format_built_in("print_list", args);
                 write!(f, "{}", out)
             },
             BuiltInPredicate::Unify(args) => {
