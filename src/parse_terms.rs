@@ -321,6 +321,82 @@ pub fn check_quotes(to_check: &str, count: usize) -> Option<String> {
     None
 } // check_quotes()
 
+/// Determines whether a string contains an arithmetic infix: +, -, *, /
+///
+/// This function returns the type and index of the arithmetic infix.<br>
+/// For example, <code>$X * 6</code> contains Infix::Multiply, at index 3.
+///
+/// # Arguments
+/// * vector of chars
+/// # Return
+/// * ([Infix](../parse_goals/enum.Infix.html), index)
+///
+/// # Notes
+/// * An infix must be preceded and followed by a space. This is invalid:  `$X*6`
+/// * The function ignores characters between double quotes and parentheses.<br>
+/// For example, for the the string of characters `" * "` (double quotes included),<br>
+/// the function will return (Infix::None, 0).
+///
+pub fn check_arithmetic_infix(chrs: &Vec<char>) -> (Infix, usize) {
+
+    let length = chrs.len();
+    let mut prev   = '#';  // not a space
+
+    let mut i = 0;
+    while i < length {
+
+        // Skip past quoted text: ">>>>>"
+        let c1 = chrs[i];
+        if c1 == '"' {
+            let mut j = i + 1;
+            while j < length  {
+                let c2 = chrs[j];
+                if c2 == '"' {
+                    i = j; break;
+                }
+                j += 1;
+            }
+        }
+        else if c1 == '(' {
+            // Skip past text within parentheses: (...)
+            let mut j = i + 1;
+            while j < length {
+                let c2 = chrs[j];
+                if c2 == ')' {
+                    i = j; break;
+                }
+                j += 1;
+            }
+        }
+        else {
+
+            // Previous character must be space.
+            if prev != ' ' {
+                prev = c1;
+                i += 1;
+                continue;
+            }
+
+            // Bad:  $X =1
+            // Good: $X = 1
+            if i >= (length - 2) { return (Infix::None, 0); }
+            if c1 == '+' { if chrs[i + 1] == ' ' { return (Infix::Plus, i); } }
+            else
+            if c1 == '-' { if chrs[i + 1] == ' ' { return (Infix::Minus, i); } }
+            else
+            if c1 == '*' { if chrs[i + 1] == ' ' { return (Infix::Multiply, i); } }
+            else
+            if c1 == '/' { if chrs[i + 1] == ' ' { return (Infix::Divide, i); } }
+        } // else
+
+        prev = c1;
+        i += 1;
+
+    } // while
+
+    return (Infix::None, 0);  // failed to find infix
+
+} // check_arithmetic_infix
 
 /// Parses a string to produce a [Unifiable](../unifiable/enum.Unifiable.html) term.
 ///
@@ -436,6 +512,61 @@ mod test {
 
     use super::*;
     use crate::unifiable::Unifiable;
+
+    #[test]
+    fn test_check_arithmetic_infix() {
+
+        let chrs = str_to_chars!("$X * 7");
+        let (inf, ind) = check_arithmetic_infix(&chrs);
+        assert_eq!(inf, Infix::Multiply);
+        assert_eq!(ind, 3, "Multiply operator");
+
+        let chrs = str_to_chars!("$X / 7");
+        let (inf, ind) = check_arithmetic_infix(&chrs);
+        assert_eq!(inf, Infix::Divide);
+        assert_eq!(ind, 3, "Divide operator");
+
+        let chrs = str_to_chars!("$X + 7");
+        let (inf, ind) = check_arithmetic_infix(&chrs);
+        assert_eq!(inf, Infix::Plus);
+        assert_eq!(ind, 3, "Plus operator");
+
+        let chrs = str_to_chars!("$X - 7");
+        let (inf, ind) = check_arithmetic_infix(&chrs);
+        assert_eq!(inf, Infix::Minus);
+        assert_eq!(ind, 3, "Minus operator");
+
+        // Not an arithmetic operator.
+        let chrs = str_to_chars!("$X < 7");
+        let (inf, ind) = check_arithmetic_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0, "Not an arithmetic operator");
+
+        // Missing spaces.
+        let chrs = str_to_chars!("$X *7");
+        let (inf, ind) = check_arithmetic_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0, "Missing space.");
+
+        // Missing spaces.
+        let chrs = str_to_chars!("$X/ 7");
+        let (inf, ind) = check_arithmetic_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0, "Missing space.");
+
+        // Inside quotes.
+        let chrs = str_to_chars!("\"$X / 7\"");
+        let (inf, ind) = check_arithmetic_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0, "Between quotes.");
+
+        // Inside parentheses.
+        let chrs = str_to_chars!("($X + 7)");
+        let (inf, ind) = check_arithmetic_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0, "Between parentheses.");
+
+    } // test_check_arithmetic_infix()
 
     #[test]
     fn test_check_quotes() {
