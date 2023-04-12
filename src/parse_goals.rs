@@ -3,6 +3,7 @@
 
 use std::fmt;
 
+use crate::atom;
 use crate::str_to_chars;
 use crate::chars_to_string;
 
@@ -122,6 +123,14 @@ pub fn indices_of_parentheses(goal: &Vec<char>)
 /// For example, for the the string of characters `" <= "` (double quotes included),<br>
 /// the function will return (Infix::None, 0).
 ///
+/// # Usage
+/// ```
+/// use suiron::*;
+///
+/// let chrs = str_to_chars!("$Age >= 22");
+/// let (infix, index) = check_infix(&chrs);
+/// println!("{infix}, {index}");  // Prints: >=, 5
+/// ```
 pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
 
     let length = chrs.len();
@@ -239,9 +248,9 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
 /// use suiron::*;
 ///
 /// let chrs = str_to_chars!("$X < 7");
-/// let (inf, ind) = check_infix(&chrs);
+/// let (_infix, index) = check_infix(&chrs);
 ///
-/// let (left, right) = match get_left_and_right(chrs, ind, 1) {
+/// let (left, right) = match get_left_and_right(chrs, index, 2) {
 ///     Ok((left, right)) => (left, right),
 ///     Err(_) => { panic!("Handle error."); },
 /// };
@@ -363,6 +372,7 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
         };
 
         let v = vec![left, right];
+
         let pred = match infix {
             Infix::Unify => {
                 BuiltInPredicate::Unify(v)
@@ -429,72 +439,86 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
         }
     }
 
-    let mut args: Vec<Unifiable>;
+    let args: Vec<Unifiable>;
     match parse_arguments(&args_str) {
         Ok(a) => { args = a; },
         Err(err) => { return Err(err); },
     }
 
-    match make_built_in_pred(&functor_str, &args) {
-        Some(goal) => { return Ok(goal); },
-        None => {},
-    }
-
-    // Create a complex term.
-    let f = Unifiable::Atom(functor_str);
-    let mut unifiables = vec![f];
-    unifiables.append(&mut args);
-    let c = Unifiable::SComplex(unifiables);
-    let g = Goal::ComplexGoal(c);
-    return Ok(g);
+    return Ok(make_goal(&functor_str, args));
 
 } // parse_subgoal
 
 
-/// Makes a built-in predicate goal, for print(), append(), etc.
+/// Makes a goal from a built-in predicate or a complex term.
 ///
-/// The function first checks to see if the given functor represents
-/// a built-in predicate. If it does, it creates a BuiltInPredicate
-/// enum, wraps this enum in a Goal, and returns the Goal. Otherwise
-/// it returns None.
+/// Complex terms and built-in predicates have the form: `functor(term1, term2...)`
+/// It the given functor represents a built-in predicate, such as print() or
+/// append(), this function will construct the predicate and wrap it in
+/// Goal::BuiltInGoal(). Otherwise, the function will construct a complex term,
+/// and wrap it in Goal::ComplexGoal().
 ///
 /// # Arguments
 /// * functor (string)
 /// * vector of [Unifiable](../unifiable/enum.Unifiable.html) terms
 /// # Result
-/// * [Goal](../goal/enum.Goal.html) or None
+/// * [Goal](../goal/enum.Goal.html)
 /// # Unify
 /// ```
 /// use suiron::*;
 ///
-/// let args = vec![atom!(""), atom!("")];
-/// let pred = make_built_in_pred("append", &args);
-/// println!("{:?}", &pred);
+/// let args = vec![atom!("Bathyurus"), atom!(" "), atom!("extans")];
+/// let goal = make_goal("append", args);
+/// println!("{}", &goal);  // Prints: append(Bathyurus,  , extans)
 /// ```
-pub fn make_built_in_pred(functor: &str, args: &Vec<Unifiable>) -> Option<Goal> {
-    let functor = functor.to_string();
-    if functor == "print" {
-        let bip = BuiltInPredicate::Print(args.clone());
-        return Some(Goal::BuiltInGoal(bip));
-    }
-    if functor == "append" {
-        let bip = BuiltInPredicate::Append(args.clone());
-        return Some(Goal::BuiltInGoal(bip));
-    }
-    if functor == "include" {
-        let bip = BuiltInPredicate::Include(args.clone());
-        return Some(Goal::BuiltInGoal(bip));
-    }
-    if functor == "exclude" {
-        let bip = BuiltInPredicate::Exclude(args.clone());
-        return Some(Goal::BuiltInGoal(bip));
-    }
-    if functor == "print_list" {
-        let bip = BuiltInPredicate::PrintList(args.clone());
-        return Some(Goal::BuiltInGoal(bip));
-    }
-    None
-} // make_built_in_pred()
+pub fn make_goal(functor: &str, mut args: Vec<Unifiable>) -> Goal {
+
+    match functor {
+        "print"      => {
+            return Goal::BuiltInGoal(BuiltInPredicate::Print(args));
+        },
+        "append"     => {
+            return Goal::BuiltInGoal(BuiltInPredicate::Append(args));
+        },
+        "functor"    => {
+            return Goal::BuiltInGoal(BuiltInPredicate::Functor(args));
+        },
+        "include"    => {
+            return Goal::BuiltInGoal(BuiltInPredicate::Include(args));
+        },
+        "exclude"    => {
+            return Goal::BuiltInGoal(BuiltInPredicate::Exclude(args));
+        },
+        "print_list" => {
+            return Goal::BuiltInGoal(BuiltInPredicate::PrintList(args));
+        },
+        "unify"      => {
+            return Goal::BuiltInGoal(BuiltInPredicate::Unify(args));
+        },
+        "equal"      => {
+            return Goal::BuiltInGoal(BuiltInPredicate::Equal(args));
+        },
+        "less_than"             => {
+            return Goal::BuiltInGoal(BuiltInPredicate::LessThan(args));
+        },
+        "less_than_or_equal"    => {
+            return Goal::BuiltInGoal(BuiltInPredicate::LessThanOrEqual(args));
+        },
+        "greater_than"          => {
+            return Goal::BuiltInGoal(BuiltInPredicate::GreaterThan(args));
+        },
+        "greater_than_or_equal" => {
+            return Goal::BuiltInGoal(BuiltInPredicate::GreaterThanOrEqual(args));
+        },
+        _ => {
+            // Create a complex term.
+            let mut unifiables = vec![atom!(functor)];
+            unifiables.append(&mut args);
+            return Goal::ComplexGoal(Unifiable::SComplex(unifiables));
+        },
+    } // match
+
+} // make_goal()
 
 
 impl fmt::Display for Infix {
