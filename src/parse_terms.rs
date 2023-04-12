@@ -201,12 +201,12 @@ pub fn parse_arguments(to_parse: &str) -> Result<Vec<Unifiable>, String> {
 // Creates a Unifiable term from the given string.
 //
 // Arguments
-//    to_parse - string to parse
+//    string to parse
 //    has_digit     - boolean, true if to_parse has digit
 //    has_non_digit - boolean, true if to_parse has non-digit
 //    has_period    - boolean, true if to_parse has period
 // Return
-//    Result - Ok(unifiable term) or Err(message)
+//    unifiable term or erro message
 fn make_term(to_parse: &str,
              has_digit: bool,
              has_non_digit: bool,
@@ -443,11 +443,7 @@ pub fn parse_term(to_parse: &str) -> Result<Unifiable, String> {
     if infix == Infix::Plus || infix == Infix::Minus ||
        infix == Infix::Multiply || infix == Infix::Divide {
 
-        let (left, right) = match get_left_and_right(chrs, index, 1) {
-            Ok((left, right)) => (left, right),
-            Err(s) => return Err(s),
-        };
-
+        let (left, right) = get_left_and_right(chrs, index, 1)?;
         let terms = vec![left, right];
 
         let sfunc = match infix {
