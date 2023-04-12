@@ -47,9 +47,9 @@ pub enum Infix {
 /// This function also checks for errors, such as unmatched parentheses.
 ///
 /// # Arguments
-/// * `goal` - vector of chars
+/// * vector of chars, representing a goal
 /// # Return
-/// * `Result` - Ok(Option((left, right))) or Err(message)
+/// * (left_index, right_index) or error message
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -67,7 +67,8 @@ pub enum Infix {
 /// // Should print: Indices: 7, 19
 /// ```
 ///
-pub fn indices_of_parentheses(goal: &Vec<char>) -> Result<Option<(usize, usize)>, String> {
+pub fn indices_of_parentheses(goal: &Vec<char>)
+                              -> Result<Option<(usize, usize)>, String> {
 
     let mut left: i32   = -1;  // index of first parenthesis
     let mut right: i32  = -1;
@@ -103,26 +104,22 @@ pub fn indices_of_parentheses(goal: &Vec<char>) -> Result<Option<(usize, usize)>
 /// Determines whether a string contains an infix: >=, ==, etc.
 ///
 /// This function returns the type and index of the
-/// [infix](../parse_goals/enum.Infix.html).
-/// For example,<br>
-/// <blockquote>
-///    $X < 6
-/// </blockquote>
-/// ...contains the `LessThan` infix, at index 3.
+/// [infix](../parse_goals/enum.Infix.html).<br>
+/// For example, `$X < 6` contains Infix::LessThan at index 3.
 ///
-/// This function does not check for arithmetic infixes (+-*/), because
-/// arithmetic is done with built-in functions. See check_arithmetic_infix()
-/// below.
+/// This function does not check for arithmetic infixes: `+ - * /`<br>
+/// Arithmetic is done with built-in functions.
+/// See [check_arithmetic_infix()](../parse_terms/fn.check_arithmetic_infix.html).
 ///
 /// # Arguments
-/// * `chrs` - vector of chars
+/// * vector of chars
 /// # Return
-/// * `(infix, index)` - [Infix](../parse_goals/enum.Infix.html)
+/// * ([Infix](../parse_goals/enum.Infix.html), index)
 ///
-/// # Note
-/// * An infix must be preceded and followed by a space. Don't do this:  $X<6
+/// # Notes
+/// * An infix must be preceded and followed by a space. This is invalid: `$X<6`
 /// * The function ignores characters between double quotes and parentheses.<br>
-/// For example, for the the string of characters \" <= \" (double quotes included),
+/// For example, for the the string of characters `" <= "` (double quotes included),<br>
 /// the function will return (Infix::None, 0).
 ///
 pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
@@ -225,110 +222,32 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
 
 } // check_infix
 
-/// Determines whether a string contains an arithmetic infix: +, -, *, /
-///
-/// This function returns the type and index of the arithmetic
-/// [infix](../parse_goals/enum.Infix.html).
-/// For example,<br>
-/// <blockquote>
-///     $X * 6
-/// </blockquote>
-/// ...contains the `Multiply` infix, at index 3.
-///
-/// # Arguments
-/// * `chrs` - vector of chars
-/// # Return
-/// * `(infix, index)` - [Infix](../parse_goals/enum.Infix.html)
-///
-/// # Note
-/// * An infix must be preceded and followed by a space. Don't do this:  $X*6
-/// * The function ignores characters between double quotes and parentheses.<br>
-/// For example, for the the string of characters \" * \" (double quotes included),
-/// the function will return (Infix::None, 0).
-///
-pub fn check_arithmetic_infix(chrs: &Vec<char>) -> (Infix, usize) {
-
-    let length = chrs.len();
-    let mut prev   = '#';  // not a space
-
-    let mut i = 0;
-    while i < length {
-
-        // Skip past quoted text: ">>>>>"
-        let c1 = chrs[i];
-        if c1 == '"' {
-            let mut j = i + 1;
-            while j < length  {
-                let c2 = chrs[j];
-                if c2 == '"' {
-                    i = j; break;
-                }
-                j += 1;
-            }
-        }
-        else if c1 == '(' {
-            // Skip past text within parentheses: (...)
-            let mut j = i + 1;
-            while j < length {
-                let c2 = chrs[j];
-                if c2 == ')' {
-                    i = j; break;
-                }
-                j += 1;
-            }
-        }
-        else {
-
-            // Previous character must be space.
-            if prev != ' ' {
-                prev = c1;
-                i += 1;
-                continue;
-            }
-
-            // Bad:  $X =1
-            // Good: $X = 1
-            if i >= (length - 2) { return (Infix::None, 0); }
-            if c1 == '+' {
-                if chrs[i + 1] == ' ' { return (Infix::Plus, i); }
-            }
-            else if c1 == '-' {
-                if chrs[i + 1] == ' ' { return (Infix::Minus, i); }
-            }
-            else if c1 == '*' {
-                if chrs[i + 1] == ' ' { return (Infix::Multiply, i); }
-            }
-            else if c1 == '/' {
-                if chrs[i + 1] == ' ' { return (Infix::Divide, i); }
-            }
-        } // else
-
-        prev = c1;
-        i += 1;
-
-    } // while
-
-    return (Infix::None, 0);  // failed to find infix
-
-} // check_arithmetic_infix
-
-
 /// Gets terms on left and right-hand side of an infix.
 ///
 /// This function divides a string (vector of characters) which contains
-/// an infix, such as "$X = verb" or "$X <= 47". It parses the left and
-/// right-hand side, to produce two Unifiable terms.
-///
-/// If there is an error in parsing a term, the function throws a panic.
+/// an infix,<br> such as `$X = verb` or `$X <= 47`.
+/// It parses the left and right sides, to produce<br>two Unifiable terms.
 ///
 /// # Arguments
-/// * `chrs`  - vector of chars
-/// * `index` - index of infix in chrs
-/// * `size`  - size of infix
+/// * vector of chars
+/// * index of infix
+/// * size of infix (1 or 2)
 /// # Return
-/// * `Result` - Ok((Unifiable, Unifiable)) or Err()`
+/// * (Unifiable, Unifiable) or error message
+/// # Usage
+/// ```
+/// use suiron::*;
+///
+/// let chrs = str_to_chars!("$X < 7");
+/// let (inf, ind) = check_infix(&chrs);
+///
+/// let (left, right) = match get_left_and_right(chrs, ind, 1) {
+///     Ok((left, right)) => (left, right),
+///     Err(_) => { panic!("Handle error."); },
+/// };
+/// ```
 pub fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize)
-                      -> Result<(Unifiable, Unifiable), String> {
+                          -> Result<(Unifiable, Unifiable), String> {
     let arg1 = &chrs[0..index];
     let arg2 = &chrs[index + size..];
     let term1: Unifiable;
@@ -379,9 +298,9 @@ fn split_complex_term(complex: Vec<char>, index1: usize, index2: usize)
 /// eg. `append(…)` and operators such as `!` and `fail` are parsed here.
 ///
 /// # Arguments
-/// * `to_parse` - &str
+/// * string to parese
 /// # Result
-/// * `Result` - Ok([Goal](../goal/enum.Goal.html)) or Err(message)
+/// * [Goal](../goal/enum.Goal.html) or error message
 ///
 /// # Note
 /// * This function does not parse And or Or operators. See
@@ -540,11 +459,18 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
 /// it returns None.
 ///
 /// # Arguments
-/// * `functor` - &str
-/// * `args` - vector of [Unifiable](../unifiable/enum.Unifiable.html) terms
+/// * functor (string)
+/// * vector of [Unifiable](../unifiable/enum.Unifiable.html) terms
 /// # Result
-/// * `Option` - Some([Goal](../goal/enum.Goal.html)) or None
+/// * [Goal](../goal/enum.Goal.html) or None
+/// # Unify
+/// ```
+/// use suiron::*;
 ///
+/// let args = vec![atom!(""), atom!("")];
+/// let pred = make_built_in_pred("append", &args);
+/// println!("{:?}", &pred);
+/// ```
 pub fn make_built_in_pred(functor: &str, args: &Vec<Unifiable>) -> Option<Goal> {
     let functor = functor.to_string();
     if functor == "print" {
@@ -569,7 +495,6 @@ pub fn make_built_in_pred(functor: &str, args: &Vec<Unifiable>) -> Option<Goal> 
     }
     None
 } // make_built_in_pred()
-
 
 
 impl fmt::Display for Infix {
@@ -606,9 +531,7 @@ mod test {
 
     use crate::str_to_chars;
 
-    use super::Infix;
-    use super::check_infix;
-    use super::indices_of_parentheses;
+    use super::*;
 
     #[test]
     fn test_indices_of_parentheses() {
@@ -725,6 +648,21 @@ mod test {
         let (inf, ind) = check_infix(&chrs);
         assert_eq!(inf, Infix::None);
         assert_eq!(ind, 0);
+    } // test_check_infix()
 
-    }
+    #[test]
+    fn test_get_left_and_right() {
+
+        let chrs = str_to_chars!("$X < 7");
+        let (_inf, ind) = check_infix(&chrs);
+
+        let (left, right) = match get_left_and_right(chrs, ind, 1) {
+            Ok((left, right)) => (left, right),
+            Err(_err) => { panic!("get_left_and_right() - Should not fail."); }
+        };
+        assert_eq!("$X", left.to_string());
+        assert_eq!("7", right.to_string());
+
+    } // test_get_left_and_right()
+
 } // test
