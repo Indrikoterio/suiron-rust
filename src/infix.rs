@@ -33,8 +33,8 @@ pub enum Infix {
 
 /// Determines whether a string contains an infix: >=, ==, etc.
 ///
-/// This function returns the type and index of the infix.<br>
-/// For example, `$X < 6` contains Infix::LessThan at index 3.
+/// This function returns the type and index of the infix. For example,<br>
+/// `$X < 6` contains Infix::LessThan at index 3.
 ///
 /// This function does not check for arithmetic infixes: `+ - * /`<br>
 /// Arithmetic is done by built-in functions.
@@ -43,7 +43,7 @@ pub enum Infix {
 /// # Arguments
 /// * vector of chars
 /// # Return
-/// * ([Infix](../parse_goals/enum.Infix.html), index)
+/// * ([Infix](../infix/enum.Infix.html), index)
 ///
 /// # Notes
 /// * An infix must be preceded and followed by a space. This is invalid: `$X<6`
@@ -167,7 +167,7 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
 /// # Arguments
 /// * vector of chars
 /// # Return
-/// * ([Infix](../parse_goals/enum.Infix.html), index)
+/// * ([Infix](../infix/enum.Infix.html), index)
 ///
 /// # Notes
 /// * An infix must be preceded and followed by a space. This is invalid:  `$X*6`
@@ -175,6 +175,14 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
 /// For example, for the the string of characters `" * "` (double quotes included),<br>
 /// the function will return (Infix::None, 0).
 ///
+/// # Usage
+/// ```
+/// use suiron::*;
+///
+/// let chrs = str_to_chars!("$Interest * 100");
+/// let (infix, index) = check_arithmetic_infix(&chrs);
+/// println!("{infix}, {index}");  // Prints: *, 10
+/// ```
 pub fn check_arithmetic_infix(chrs: &Vec<char>) -> (Infix, usize) {
 
     let length = chrs.len();
