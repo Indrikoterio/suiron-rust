@@ -169,19 +169,6 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
     }
 
     let chrs = str_to_chars!(s);
-//    let length = chrs.len();
-
-    // not() looks like a built-in predicate
-    // but it's actually an operator.
-/*
-    if s.starts_with("not(") {
-        let c = chrs[4..length - 1];
-        match parse_subgoal(chars_to_string!(c)) {
-            Ok(g) => { return Ok(Not(g)); },
-            Err(err) => { return Err(err); },
-        }
-    }
-*/
 
     // Built-in predicates with no arguments.
     if s == "!" {  // cut
@@ -264,92 +251,118 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
     let (functor_str, args_str) =
                      split_complex_term(chrs, left_index, right_index);
 
-// xxxxxxxxxxxxxxxxxxxxxx
-
-    // Check for time operator.
-    if functor_str == "time" {
-        let goal = parse_subgoal(&args_str)?;
-        // Wrap goal in time-goal.
-        let time = Operator::Time(vec![goal]);
-        let goal = Goal::OperatorGoal(time);
-        return Ok(goal);
+    // Check for operators.
+    if functor_str == "time" || functor_str == "not"{
+       return make_operator_goal(&functor_str, &args_str);
     }
 
-    let args = parse_arguments(&args_str)?;
-    return Ok(make_goal(&functor_str, args));
+    return make_goal(&functor_str, &args_str);
 
 } // parse_subgoal
 
 
-/// Makes a goal from a functor and a vector of terms.
+/// Makes a goal from a functor and a vector of unifiable terms.
 ///
 /// Complex terms and built-in predicates have the form: `functor(term1, term2...)`
-/// It the given functor represents a built-in predicate, such as print() or
+/// If the given functor represents a built-in predicate, such as print() or
 /// append(), this function will construct the predicate and wrap it in
 /// Goal::BuiltInGoal(). Otherwise, the function will construct a complex term,
 /// and wrap it in Goal::ComplexGoal().
 ///
 /// # Arguments
 /// * functor (string)
-/// * vector of [Unifiable](../unifiable/enum.Unifiable.html) terms
+/// * arguments / terms (string)
 /// # Result
 /// * [Goal](../goal/enum.Goal.html)
-/// # Unify
+/// # Usage
 /// ```
 /// use suiron::*;
 ///
-/// let args = vec![atom!("Bathyurus"), atom!(" "), atom!("extans")];
-/// let goal = make_goal("append", args);
-/// println!("{}", &goal);  // Prints: append(Bathyurus,  , extans)
+/// let args = "3.14159, [A, B, C], 6, $Out";
+/// let append_pred = match make_goal("append", args) {
+///     Ok(goal) => { println!("{}", &goal); },
+///     Err(err) => { panic!("{}", err); },
+/// };
+/// // Prints: append(3.14159, [A, B, C], 6, $Out)
 /// ```
-pub fn make_goal(functor: &str, mut args: Vec<Unifiable>) -> Goal {
+pub fn make_goal(functor: &str, args_str: &str) -> Result<Goal, String> {
+
+    let mut args = parse_arguments(args_str)?;
 
     match functor {
         "print"      => {
-            return Goal::BuiltInGoal(BuiltInPredicate::Print(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Print(args)));
         },
         "append"     => {
-            return Goal::BuiltInGoal(BuiltInPredicate::Append(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Append(args)));
         },
         "functor"    => {
-            return Goal::BuiltInGoal(BuiltInPredicate::Functor(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Functor(args)));
         },
         "include"    => {
-            return Goal::BuiltInGoal(BuiltInPredicate::Include(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Include(args)));
         },
         "exclude"    => {
-            return Goal::BuiltInGoal(BuiltInPredicate::Exclude(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Exclude(args)));
         },
         "print_list" => {
-            return Goal::BuiltInGoal(BuiltInPredicate::PrintList(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::PrintList(args)));
         },
         "unify"      => {
-            return Goal::BuiltInGoal(BuiltInPredicate::Unify(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Unify(args)));
         },
         "equal"      => {
-            return Goal::BuiltInGoal(BuiltInPredicate::Equal(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Equal(args)));
         },
         "less_than"             => {
-            return Goal::BuiltInGoal(BuiltInPredicate::LessThan(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::LessThan(args)));
         },
         "less_than_or_equal"    => {
-            return Goal::BuiltInGoal(BuiltInPredicate::LessThanOrEqual(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::LessThanOrEqual(args)));
         },
         "greater_than"          => {
-            return Goal::BuiltInGoal(BuiltInPredicate::GreaterThan(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::GreaterThan(args)));
         },
         "greater_than_or_equal" => {
-            return Goal::BuiltInGoal(BuiltInPredicate::GreaterThanOrEqual(args));
+            return Ok(Goal::BuiltInGoal(BuiltInPredicate::GreaterThanOrEqual(args)));
         },
         _ => {
             // Create a complex term.
             let mut unifiables = vec![atom!(functor)];
             unifiables.append(&mut args);
-            return Goal::ComplexGoal(Unifiable::SComplex(unifiables));
+            return Ok(Goal::ComplexGoal(Unifiable::SComplex(unifiables)));
         },
     } // match
 
 } // make_goal()
+
+/// Makes a operator goal for the given name and argument.
+///
+/// A built-in predicate or complex term holds a vectors of unifiable terms.
+/// An operator, on the other hand, holds a vector of goals, so it must be
+/// handled separately.
+///
+/// # Arguments
+/// * name of operator
+/// * argument string
+/// # Return
+/// * operator goal or error message
+///
+fn make_operator_goal(name: &str, args_str: &str) -> Result<Goal, String> {
+    let subgoal = parse_subgoal(&args_str)?;
+    match name {
+        "time" => {
+            return Ok(Goal::OperatorGoal(Operator::Time(vec![subgoal])));
+        },
+        "not" => {
+            return Ok(Goal::OperatorGoal(Operator::Not(vec![subgoal])));
+        },
+        _ => {
+           let err = "make_operator_goal() - Invalid operator.".to_string();
+           return Err(err)
+        },
+    }
+} // make_operator_goal()
 
 // Formats an error message for indices_of_parentheses().
 // Arguments:
