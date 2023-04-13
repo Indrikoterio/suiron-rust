@@ -264,17 +264,15 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
     let (functor_str, args_str) =
                      split_complex_term(chrs, left_index, right_index);
 
+// xxxxxxxxxxxxxxxxxxxxxx
+
     // Check for time operator.
     if functor_str == "time" {
-        match parse_subgoal(&args_str) {
-            Ok(g) => {
-                // Wrap g in time-goal.
-                let time = Operator::Time(vec![g]);
-                let goal = Goal::OperatorGoal(time);
-                return Ok(goal);
-            },
-            Err(err) => { return Err(err); },
-        }
+        let goal = parse_subgoal(&args_str)?;
+        // Wrap goal in time-goal.
+        let time = Operator::Time(vec![goal]);
+        let goal = Goal::OperatorGoal(time);
+        return Ok(goal);
     }
 
     let args = parse_arguments(&args_str)?;
