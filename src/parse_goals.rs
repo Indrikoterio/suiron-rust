@@ -438,7 +438,7 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
 } // parse_subgoal
 
 
-/// Makes a goal from a built-in predicate or a complex term.
+/// Makes a goal from a functor and a vector of terms.
 ///
 /// Complex terms and built-in predicates have the form: `functor(term1, term2...)`
 /// It the given functor represents a built-in predicate, such as print() or
