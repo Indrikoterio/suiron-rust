@@ -2,12 +2,13 @@
 //!
 // Cleve Lendon 2023
 
+use super::infix::*;
+use super::parse_goals::*;
 use super::s_linked_list::*;
 use super::logic_var::*;
 use super::s_complex::*;
 use super::unifiable::{*, Unifiable::*};
 use super::built_in_functions::*;
-use super::parse_goals::*;
 
 use crate::atom;
 use crate::str_to_chars;
