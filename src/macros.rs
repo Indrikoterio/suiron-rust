@@ -20,6 +20,8 @@
 //! Creates a query from a list of terms.<br>
 //! [rc_cell!](../macro.rc_cell.html) -
 //! Creates a smart pointer to mutable data.<br>
+//! [sfunction!](../macro.sfunction.html) -
+//! Creates a built-in function.<br>
 //! [scomplex!](../macro.scomplex.html) -
 //! Creates a complex term (= compound term).<br>
 //! [slist!](../macro.slist.html) - Builds a Suiron list.<br>
@@ -466,10 +468,32 @@ macro_rules! query {
 /// let x = logic_var!(next_id(), "$X");
 /// let number = SInteger(7);
 /// let goal = unify!(x, number);   // Goal is: $X = 7
-///
+/// ```
 #[macro_export]
 macro_rules! unify {
     ($left:expr, $right:expr) => {
         Goal::BuiltInGoal(BuiltInPredicate::Unify(vec![$left, $right]))
+    };
+}
+
+/// Creates a built-in function.
+///
+/// # Arguments
+/// * name of function
+/// * list of [Unifiable](../suiron/unifiable/enum.Unifiable.html) terms
+/// # Return
+/// * [SFunction](../suiron/unifiable/enum.Unifiable.html#variant.SFunction)
+///
+/// # Usage
+/// ```
+/// use suiron::*;
+///
+/// // Define: add(7.0, 3.0)
+/// let add_func = sfunction!("add", SFloat(7.0), SFloat(3.0));
+/// ```
+#[macro_export]
+macro_rules! sfunction {
+    ($name:expr, $($term:expr),*) => {
+        Unifiable::SFunction{ name: $name.to_string(), terms: vec!($($term),*) }
     };
 }
