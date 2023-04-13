@@ -260,6 +260,7 @@ pub mod built_in_comparison;
 pub mod built_in_arithmetic;
 pub mod built_in_print_list;
 pub mod time_out;
+pub mod infix;
 
 #[macro_use]
 pub mod macros;
@@ -291,3 +292,4 @@ pub use built_in_comparison::*;
 pub use built_in_arithmetic::*;
 pub use built_in_print_list::*;
 pub use time_out::*;
+pub use infix::*;
