@@ -15,7 +15,7 @@ use std::rc::Rc;
 #[test]
 pub fn test_append() {
 
-    // Make some comments.
+    // Make some colours.
     let red    = atom!("red");
     let orange = atom!("orange");
     let green  = atom!("green");
@@ -67,7 +67,7 @@ pub fn test_append() {
             // Get the result.
             match query.get_ground_term(1, ss) {
                 Some(result) => {
-                    let s = format!("{}", result);
+                    let s = format!("{result}");
                     assert_eq!("[red, orange, green, blue, purple]", s);
                 },
                 None => { panic!("No solution."); },
@@ -93,7 +93,7 @@ pub fn test_append() {
             // Get the result.
             match query.get_ground_term(1, ss) {
                 Some(result) => {
-                    let s = format!("{}", result);
+                    let s = format!("{result}");
                     assert_eq!("[cherry, strawberry, blueberry, raspberry]", s);
                 },
                 None => { panic!("No solution."); },
