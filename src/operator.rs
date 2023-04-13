@@ -22,6 +22,8 @@ pub enum Operator {
     // Note: time() only takes one goal, but indirection is needed.
     // Therefore, it is necessary to enclose the goal in a vector.
     Time(Vec<Goal>),
+    /// Not - Succeeds if goal argument cannot be proven true.
+    Not(Vec<Goal>),
 }
 
 impl Operator {
