@@ -21,12 +21,10 @@ use super::built_in_predicates::*;
 /// in built_in_predicates.rs.
 ///
 /// # Arguments
-/// * `bip` - [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
-/// * `ss` - [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
+/// * [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
+/// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
 /// # Return
-/// * `Option` -
-/// Some([SubstitutionSet](../substitution_set/type.SubstitutionSet.html))
-/// or None
+/// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
 /// # Usage
 /// ```
 /// use suiron::*;
