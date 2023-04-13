@@ -61,7 +61,7 @@ pub enum Unifiable {
         count: usize,
         tail_var: bool,         // tail variable flag
     },
-    /// This variant identifies built-in functions, such as add(), join(), etc.<br>
+    /// This variant defines built-in functions, such as add(), join(), etc.<br>
     /// Built-in functions produce a unifiable term from a list of arguments.
     SFunction{name: String, terms: Vec<Unifiable>},
 }
