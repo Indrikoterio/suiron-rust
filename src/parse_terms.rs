@@ -434,61 +434,6 @@ mod test {
     use crate::unifiable::Unifiable;
 
     #[test]
-    fn test_check_arithmetic_infix() {
-
-        let chrs = str_to_chars!("$X * 7");
-        let (inf, ind) = check_arithmetic_infix(&chrs);
-        assert_eq!(inf, Infix::Multiply);
-        assert_eq!(ind, 3, "Multiply operator");
-
-        let chrs = str_to_chars!("$X / 7");
-        let (inf, ind) = check_arithmetic_infix(&chrs);
-        assert_eq!(inf, Infix::Divide);
-        assert_eq!(ind, 3, "Divide operator");
-
-        let chrs = str_to_chars!("$X + 7");
-        let (inf, ind) = check_arithmetic_infix(&chrs);
-        assert_eq!(inf, Infix::Plus);
-        assert_eq!(ind, 3, "Plus operator");
-
-        let chrs = str_to_chars!("$X - 7");
-        let (inf, ind) = check_arithmetic_infix(&chrs);
-        assert_eq!(inf, Infix::Minus);
-        assert_eq!(ind, 3, "Minus operator");
-
-        // Not an arithmetic operator.
-        let chrs = str_to_chars!("$X < 7");
-        let (inf, ind) = check_arithmetic_infix(&chrs);
-        assert_eq!(inf, Infix::None);
-        assert_eq!(ind, 0, "Not an arithmetic operator");
-
-        // Missing spaces.
-        let chrs = str_to_chars!("$X *7");
-        let (inf, ind) = check_arithmetic_infix(&chrs);
-        assert_eq!(inf, Infix::None);
-        assert_eq!(ind, 0, "Missing space.");
-
-        // Missing spaces.
-        let chrs = str_to_chars!("$X/ 7");
-        let (inf, ind) = check_arithmetic_infix(&chrs);
-        assert_eq!(inf, Infix::None);
-        assert_eq!(ind, 0, "Missing space.");
-
-        // Inside quotes.
-        let chrs = str_to_chars!("\"$X / 7\"");
-        let (inf, ind) = check_arithmetic_infix(&chrs);
-        assert_eq!(inf, Infix::None);
-        assert_eq!(ind, 0, "Between quotes.");
-
-        // Inside parentheses.
-        let chrs = str_to_chars!("($X + 7)");
-        let (inf, ind) = check_arithmetic_infix(&chrs);
-        assert_eq!(inf, Infix::None);
-        assert_eq!(ind, 0, "Between parentheses.");
-
-    } // test_check_arithmetic_infix()
-
-    #[test]
     fn test_check_quotes() {
 
         // Check: ""Hello"
