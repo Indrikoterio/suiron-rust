@@ -10,6 +10,7 @@
 // calculate($X, $Y, $Out) :- $A = add($X, $Y), $B = subtract($A, 6),
 //                            $C = multiply($B, 3.4), $Out = divide($C, 3.4).
 //
+//
 // Cleve Lendon  2023
 
 use std::rc::Rc;
@@ -85,3 +86,51 @@ pub fn test_arithmetic() {
     }
 
 } // test_arithmetic()
+
+#[test]
+
+// Test to see if parsing infixes works.
+// This test uses the same formula as above.
+pub fn test_arithmetic_parse() {
+
+    let mut kb = KnowledgeBase::new();
+
+    let rule1 = parse_rule(
+                "calculate($X, $Y, $Out) :- $A = $X + $Y, $B = $A - 6, \
+                 $C = $B * 3.4, $Out = $C / 3.4.").unwrap();
+
+    let rule2 = parse_rule(
+                "test($Out) :- calculate(3.0, 7.0, $Out); \
+                 calculate(3.0, -7.0, $Out).").unwrap();
+    add_rules!(&mut kb, rule1, rule2);
+
+    let query = query!(atom!("test"), logic_var!("$X"));
+    let sn = make_base_node(Rc::clone(&query), &kb);
+
+    let ss = next_solution(Rc::clone(&sn));
+
+    let ss = match ss {
+        Some(ss) => { ss },
+        None => { panic!("No Solution. #1"); },
+    };
+
+    let result = query.get_ground_term(1, Rc::clone(&ss));
+    match result {
+        Some(r) => { assert_eq!(SFloat(4.0), r); },
+        None => { panic!("No solution!"); },
+    }
+
+    // Let's get a second solution.
+    let ss = next_solution(Rc::clone(&sn));
+    let ss = match ss {
+        Some(ss) => { ss },
+        None => { panic!("No Solution. #1"); },
+    };
+
+    let result = query.get_ground_term(1, Rc::clone(&ss));
+    match result {
+        Some(r) => { assert_eq!(SFloat(-10.0), r); },
+        None => { panic!("No solution!"); },
+    }
+
+} // test_arithmetic_parse()
