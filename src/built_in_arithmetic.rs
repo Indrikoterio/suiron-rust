@@ -258,9 +258,7 @@ fn get_numbers<'a>(terms: &Vec<Unifiable>, ss: &'a Rc<SubstitutionSet<'a>>)
                     },
                 } // match
             },
-            None => {
-                number_panic("Argument is not grounded", term);
-            },
+            None => { number_panic("Argument is not grounded", term); },
         } // match
     } // for
     return (numbers, has_float);
