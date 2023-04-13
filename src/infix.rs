@@ -33,13 +33,12 @@ pub enum Infix {
 
 /// Determines whether a string contains an infix: >=, ==, etc.
 ///
-/// This function returns the type and index of the
-/// [infix](../parse_goals/enum.Infix.html).<br>
+/// This function returns the type and index of the infix.<br>
 /// For example, `$X < 6` contains Infix::LessThan at index 3.
 ///
 /// This function does not check for arithmetic infixes: `+ - * /`<br>
-/// Arithmetic is done with built-in functions.
-/// See [check_arithmetic_infix()](../parse_terms/fn.check_arithmetic_infix.html).
+/// Arithmetic is done by built-in functions.
+/// See check_arithmetic_infix().
 ///
 /// # Arguments
 /// * vector of chars
