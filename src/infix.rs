@@ -254,3 +254,88 @@ impl fmt::Display for Infix {
         };
     } // fmt
 } // fmt::Display
+
+#[cfg(test)]
+mod test {
+
+    use crate::str_to_chars;
+    use super::*;
+
+    #[test]
+    fn test_check_infix() {
+
+        let chrs = str_to_chars!("$X = $Y");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::Unify);
+        assert_eq!(ind, 3, "Unify");
+
+        let chrs = str_to_chars!("$X =$Y");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0);
+
+        let chrs = str_to_chars!("$X > $Y");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::GreaterThan);
+        assert_eq!(ind, 3, "GreaterThan");
+
+        let chrs = str_to_chars!("$Age >= 50");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::GreaterThanOrEqual);
+        assert_eq!(ind, 5, "GreaterThanOrEqual");
+
+        let chrs = str_to_chars!("$Height < 152");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::LessThan);
+        assert_eq!(ind, 8, "LessThan");
+
+        let chrs = str_to_chars!("$Grade <= 60");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::LessThanOrEqual);
+        assert_eq!(ind, 7, "LessThanOrEqual");
+
+        let chrs = str_to_chars!("100 == $Score");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::Equal);
+        assert_eq!(ind, 4, "Equal");
+
+        let chrs = str_to_chars!("\" <= \"");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0, "Infix between double quotes should be ignored.");
+
+        //-------------------------------------------------------
+        // There must be a space after an infix. Otherwise ignore.
+
+        let chrs = str_to_chars!("$X =1");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0);
+
+        let chrs = str_to_chars!("$X <=1");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0);
+
+        let chrs = str_to_chars!("$X >=1");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0);
+
+        let chrs = str_to_chars!("$X ==1");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0);
+
+        let chrs = str_to_chars!("$X <1");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0);
+
+        let chrs = str_to_chars!("$X >1");
+        let (inf, ind) = check_infix(&chrs);
+        assert_eq!(inf, Infix::None);
+        assert_eq!(ind, 0);
+    } // test_check_infix()
+
+} // test
