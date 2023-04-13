@@ -111,6 +111,9 @@ impl Operator {
             Operator::Time(goals) => {
                 Operator::Time(recreate_vars_goals(goals, vars))
             },
+            Operator::Not(goals) => {
+                Operator::Not(recreate_vars_goals(goals, vars))
+            },
         }
     }
 
@@ -124,7 +127,8 @@ impl Operator {
         match self {
             Operator::And(goals) |
             Operator::Or(goals) |
-            Operator::Time(goals) => { return goals.len(); },
+            Operator::Time(goals) |
+            Operator::Not(goals) => { return goals.len(); },
         }
     }
 
@@ -154,6 +158,7 @@ impl Operator {
             Operator::And(goals) |
             Operator::Or(goals) |
             Operator::Time(goals)=> { return goals[index].clone(); },
+            Operator::Not(goals)=> { return goals[index].clone(); },
         }
     } // get_subgoal()
 
@@ -197,6 +202,9 @@ impl fmt::Display for Operator {
                 write!(f, "{}", format_list(goals, "; "))
             },
             Operator::Time(goals) => {
+                write!(f, "{}", goals[0])
+            },
+            Operator::Not(goals) => {
                 write!(f, "{}", goals[0])
             },
         } // match
