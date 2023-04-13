@@ -25,10 +25,7 @@ use super::built_in_predicates::*;
 /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
 /// # Return
 /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
-/// # Usage
-/// ```
-/// use suiron::*;
-/// ```
+///
 pub fn next_solution_append<'a>(bip: BuiltInPredicate,
                                 ss: &'a Rc<SubstitutionSet<'a>>)
                                 -> Option<Rc<SubstitutionSet<'a>>> {
@@ -97,10 +94,10 @@ pub fn next_solution_append<'a>(bip: BuiltInPredicate,
 /// Examples:
 ///
 /// # Arguments
-/// * `terms` - vector of Unifiable terms
-/// * `ss` - substitution set
+/// * vector of Unifiable terms
+/// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
 /// # Result
-/// * `Option` - Some(SubstitutionSet) or None
+/// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
 pub fn append_terms<'a>(terms: Vec<Unifiable>,
                         ss: Rc<SubstitutionSet<'a>>)
                         -> Option<Rc<SubstitutionSet<'a>>> {
