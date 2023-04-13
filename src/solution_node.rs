@@ -48,15 +48,13 @@ pub struct SolutionNode<'a> {
     pub no_backtracking: bool,
 
     // For Complex Solution Nodes.
-    /// Refers to the solution node of a rule's body. (For Complex goals.)
-    pub child: Option<Rc<RefCell<SolutionNode<'a>>>>,
     /// The index of a fact or rule. (For Complex goals.)
     pub rule_index: usize,
     /// The number of facts and rules for the goal above. (For Complex goals.)
     pub number_facts_rules: usize,
 
     // For And/Or Solution Nodes.
-    /// Head solution node. (For And/Or goals.)
+    /// Head solution node.
     pub head_sn: Option<Rc<RefCell<SolutionNode<'a>>>>,
     /// Tail solution node. (For And/Or goals.)
     pub tail_sn: Option<Rc<RefCell<SolutionNode<'a>>>>,
@@ -91,7 +89,6 @@ impl<'a> SolutionNode<'a> {
             parent_node: None,
             ss: empty_ss!(),
             no_backtracking: false,
-            child: None,
             rule_index: 0,
             number_facts_rules: 0,
             head_sn: None,
@@ -257,15 +254,15 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
             let mut sn_ref = sn.borrow_mut();
 
             // Check for a child solution.
-            match &sn_ref.child {
+            match &sn_ref.head_sn {
                 None => {},
-                Some(child_sn) => {
-                    let solution = next_solution(Rc::clone(&child_sn));
+                Some(head_sn) => {
+                    let solution = next_solution(Rc::clone(&head_sn));
                     if solution.is_some() { return solution; }
                 },
             }
 
-            sn_ref.child = None;
+            sn_ref.head_sn = None;
             loop {
 
                 if sn_ref.rule_index >= sn_ref.number_facts_rules { return None; }
@@ -287,11 +284,11 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                     Some(ss) => {
                         let body = rule.get_body();
                         if body == Goal::Nil { return Some(ss); }
-                        let child_sn = make_solution_node(Rc::new(body),
+                        let head_sn = make_solution_node(Rc::new(body),
                                                           sn_ref.kb, ss,
                                                           Rc::clone(&sn));
-                        sn_ref.child = Some(Rc::clone(&child_sn));
-                        let child_solution = next_solution(child_sn);
+                        sn_ref.head_sn = Some(Rc::clone(&head_sn));
+                        let child_solution = next_solution(head_sn);
                         if child_solution.is_some() { return child_solution; }
                     },
                 } // match
