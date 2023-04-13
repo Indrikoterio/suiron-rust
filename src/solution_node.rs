@@ -218,23 +218,9 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                 Operator::Or(_) => {
                     return next_solution_or(sn);
                 },
-                Operator::Time(goals) => {
 
-                    if goals.len() < 1 { return None; }
-
-                    let mut sn_ref = sn.borrow_mut();
-                    match sn_ref.head_sn {
-                        None => {
-                            let goal = goals[0].clone();
-                            let sn = make_solution_node(Rc::new(goal),
-                                                        sn_ref.kb,
-                                                        Rc::clone(&sn_ref.ss),
-                                                        Rc::clone(&sn));
-                            sn_ref.head_sn = Some(sn);
-                        },
-                        Some(_) => {},
-                    } // match
-
+                Operator::Time(_) => {
+                    let sn_ref = sn.borrow_mut();
                     match &sn_ref.head_sn {
                         Some(head_sn) => {
                             let now = Instant::now();
@@ -245,7 +231,23 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                         None => { panic!("next_solution() - \
                                   Missing solution node. Should not happen."); },
                     } // match
-                },
+                }, // Time
+
+                Operator::Not(_) => {
+                    let sn_ref = sn.borrow_mut();
+                    match &sn_ref.head_sn {
+                        Some(head_sn) => {
+                            let solution = next_solution(Rc::clone(&head_sn));
+                            match solution {
+                                Some(_) => return None,
+                                None => return Some(Rc::clone(&sn_ref.ss)),
+                            }
+                        },
+                        None => { panic!("next_solution() - \
+                                  Missing solution node. Should not happen."); },
+                    } // match
+                }, // Not
+
             } // match op
 
         }, // Goal::OperatorGoal(op)
