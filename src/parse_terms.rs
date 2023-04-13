@@ -107,28 +107,39 @@ pub fn parse_arguments(to_parse: &str) -> Result<Vec<Unifiable>, String> {
                 round_depth -= 1
             }
             else if round_depth == 0 && square_depth == 0 {
+
                 if ch == ',' {
+
                     let s2 = argument.trim();
                     match check_quotes(s2, num_quotes) {
                         Some(err) => { return Err(err); },
                         None => {},
                     }
                     num_quotes = 0;
-                    match make_term(s2, has_digit, has_non_digit, has_period) {
-                        Err(err) => { return Err(err); },
-                        Ok(term) => {
-                            term_list.push(term);
-                            argument    = "".to_string();
-                            has_digit   = false;
-                            has_non_digit = false;
-                            has_period  = false;
-                            start = i + 1;    // past comma
-                        },
-                    }
+
+                    let term = make_term(s2, has_digit, has_non_digit, has_period)?;
+                    term_list.push(term);
+                    argument    = "".to_string();
+                    has_digit   = false;
+                    has_non_digit = false;
+                    has_period  = false;
+                    start = i + 1;    // past comma
                 }
                 else if ch >= '0' && ch <= '9' {
                     argument.push(ch);
                     has_digit = true
+                }
+                else if ch == '+' || ch == '-' {
+                    argument.push(ch);
+                    // Plus or minus might be in front of a number: +7, -3.8
+                    // In this case, it is part of the number.
+                    let mut next_ch = 'x';
+                    if i < length_chrs - 1 { next_ch = chrs[i + 1]; }
+                    let mut prev_ch = ' ';
+                    if i > 0 { prev_ch = chrs[i]; }
+                    if prev_ch == ' ' && (next_ch < '0' || next_ch > '9') {
+                        has_non_digit = true;
+                    }
                 }
                 else if ch == '.' {
                     argument.push(ch);
@@ -150,9 +161,7 @@ pub fn parse_arguments(to_parse: &str) -> Result<Vec<Unifiable>, String> {
                 }
                 else {
                     argument.push(ch);
-                    if ch > ' ' {
-                        has_non_digit = true;
-                    }
+                    if ch > ' ' { has_non_digit = true; }
                 }
             }
             else {
@@ -175,12 +184,8 @@ pub fn parse_arguments(to_parse: &str) -> Result<Vec<Unifiable>, String> {
             None => {},
         }
 
-        match make_term(s2, has_digit, has_non_digit, has_period) {
-            Ok(term) => {
-                term_list.push(term);
-            },
-            Err(err) => { return Err(err); },
-        }
+        let term = make_term(s2, has_digit, has_non_digit, has_period)?;
+        term_list.push(term);
     }
 
     if round_depth != 0 {
@@ -272,12 +277,12 @@ fn make_term(to_parse: &str,
         if has_period {
             match s.parse::<f64>() {
                 Ok(fl) => { return Ok(SFloat(fl)); },
-                Err(_) => { return Ok(atom!(s)) },
+                Err(_) => { return Err("Invalid float.".to_string()) },
             }
         } else {
             match s.parse::<i64>() {
                 Ok(i) => { return Ok(SInteger(i)); },
-                Err(_) => { return Ok(atom!(s)); },
+                Err(_) => { return Err("Invalid integer".to_string()); },
             }
         }
     }
