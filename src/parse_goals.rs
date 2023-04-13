@@ -140,13 +140,14 @@ fn split_complex_term(complex: Vec<char>, index1: usize, index2: usize)
 } // split_complex_term
 
 
-/// Parses strings to produce subgoals.
+/// Parses a string to produce a goal.
 ///
-/// Complex terms, eg. `element(Xenon, $N, $W)`, built-in predicates,
-/// eg. `append(…)` and operators such as `!` and `fail` are parsed here.
+/// This function parses strings which represent complex terms, such
+/// as `element(Xenon, $N, $W)`, and built-in predicates, such as
+/// `append(…)`, to produce `ComplexGoal`s and `BuiltInGoal`s.
 ///
 /// # Arguments
-/// * string to parese
+/// * string to parse
 /// # Result
 /// * [Goal](../goal/enum.Goal.html) or error message
 ///
