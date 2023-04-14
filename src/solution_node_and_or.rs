@@ -18,14 +18,10 @@ use super::substitution_set::*;
 /// All subgoals must succeed for the And solution node to succeed.
 ///
 /// # Arguments
-/// * `sn` -
-/// [SolutionNode](../solution_node/struct.SolutionNode.html)
-/// * `sn_ref` - reference to
-/// [SolutionNode](../solution_node/struct.SolutionNode.html)
+/// * [SolutionNode](../solution_node/struct.SolutionNode.html)
+/// * reference to [SolutionNode](../solution_node/struct.SolutionNode.html)
 /// # Return
-/// `Option` -
-/// Some([SubstitutionSet](../substitution_set/type.SubstitutionSet.html))
-/// or None
+/// [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
 pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                              -> Option<Rc<SubstitutionSet<'a>>> {
 
@@ -85,14 +81,10 @@ pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
 /// Checks subgoals until a success is found.
 ///
 /// # Arguments
-/// * `sn` -
-/// [SolutionNode](../solution_node/struct.SolutionNode.html)
-/// * `sn_ref` - reference to
-/// [SolutionNode](../solution_node/struct.SolutionNode.html)
+/// * [SolutionNode](../solution_node/struct.SolutionNode.html)
+/// * reference to [SolutionNode](../solution_node/struct.SolutionNode.html)
 /// # Return
-/// `Option` -
-/// Some([SubstitutionSet](../substitution_set/type.SubstitutionSet.html))
-/// or None
+/// [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
 pub fn next_solution_or<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                             -> Option<Rc<SubstitutionSet<'a>>> {
 
