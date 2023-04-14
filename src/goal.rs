@@ -213,8 +213,7 @@ impl Goal {
                                ss: Rc<SubstitutionSet<'a>>) -> Option<Unifiable> {
         match self {
             Goal::ComplexGoal(Unifiable::SComplex(terms)) => {
-                let term = terms[index].clone();
-                match get_binding(&term, &ss) {
+                match get_binding(&terms[index], &ss) {
                     Some(term) => { Some(term.clone()) },
                     None => { None },
                 }
