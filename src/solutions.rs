@@ -97,10 +97,7 @@ pub fn solve_all<'a>(sn: Rc<RefCell<SolutionNode<'a>>>) -> Vec<String> {
                 let s = format_solution(&query, &result);
                 results.push(s);
             },
-            None => {
-                results.push(NO_MORE.to_string());
-                break;
-            }
+            None => { break; }
         } // match solution
 
     } // loop
@@ -266,10 +263,9 @@ mod test {
         let sn = make_base_node(Rc::new(query), &kb); // solution node
         let results = solve_all(Rc::clone(&sn));
 
-        assert_eq!(results.len(), 3, "There should be 3 solutions.");
+        assert_eq!(results.len(), 2, "There should be 2 solutions.");
         assert_eq!("$Who = Leonard, $Whom = Penny", results[0]);
         assert_eq!("$Who = Penny, $Whom = Leonard", results[1]);
-        assert_eq!(NO_MORE, results[2]);
 
     } // test_solve()
 
