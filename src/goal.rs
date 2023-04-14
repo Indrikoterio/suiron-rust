@@ -48,10 +48,10 @@ impl Goal {
     /// must be given unique IDs.
     ///
     /// # Arguments
-    /// * `self`
-    /// * `vars` - Map of previously recreated variable IDs.
+    /// * self
+    /// * vars - Map of previously recreated variable IDs.
     /// # Return
-    /// * `new goal`
+    /// * new goal
     /// # Usage
     /// ```
     /// use suiron::*;
@@ -101,10 +101,10 @@ impl Goal {
     /// the solution, eg. `loves(Leonard, Penny)`.
     ///
     /// # Arguments
-    /// * `self`
-    /// * `ss` - [substitution_set](../substitution_set/index.html)
+    /// * self
+    /// * [substitution_set](../substitution_set/index.html)
     /// # Return
-    /// * `new term` - should contain no variables
+    /// * new term - should contain no variables
     /// # Panics
     /// * If the goal is not a
     /// [ComplexGoal](../goal/enum.Goal.html#variant.ComplexGoal)
