@@ -178,12 +178,12 @@ impl Goal {
     /// This method is useful for getting the results of a query.
     ///
     /// # Arguments
-    /// * `self`
-    /// * `index` - index of term
-    /// * `ss` - [SubstitutionSet](../substitution_set/index.html)
+    /// * self
+    /// * index of term
+    /// * [SubstitutionSet](../substitution_set/index.html)
     /// (containing solution of query)
     /// # Returns
-    /// * `Option` - Some([Unifiable](../unifiable/enum.Unifiable.html)) or None
+    /// * [Unifiable](../unifiable/enum.Unifiable.html) or None
     ///
     /// # Usage
     /// ```
@@ -231,6 +231,12 @@ impl Goal {
 /// The parent node of the base node is initialized to None.<br>
 /// The parent solution is initialized to an empty substitution set.
 ///
+/// # Arguments
+/// * goal to be proven
+/// * knowledge base
+/// # Return
+/// * reference to a [SolutionNode](../solution_node/struct.SolutionNode.html)
+///
 /// # Panics
 /// * If the goal is not a
 /// [ComplexGoal](../goal/enum.Goal.html#variant.ComplexGoal)
@@ -262,10 +268,10 @@ pub fn make_base_node<'a>(goal: Rc<Goal>, kb: &'a KnowledgeBase)
 /// Makes a solution node according to the type of goal.
 ///
 /// # Arguments
-/// * `self` - the goal to be proven
-/// * `kb` - Knowledge Base
-/// * `ss`
-/// * `parent_node`
+/// * goal to be proven
+/// * knowledge base
+/// * parent substitution set
+/// * parent solution node
 /// # Return
 /// * reference to a [SolutionNode](../solution_node/struct.SolutionNode.html)
 /// # Usage
@@ -350,8 +356,11 @@ pub fn make_solution_node<'a>(goal: Rc<Goal>,
     } // match
 } // make_solution_node()
 
-
 /// This helper function sets the head_sn field of the given and/or node.
+///
+/// # Arguments
+/// * solution node
+/// * head solution node
 fn set_head_node<'a>(node: &Rc<RefCell<SolutionNode<'a>>>,
                      head_sn: Rc<RefCell<SolutionNode<'a>>>) {
     let mut mut_node = node.borrow_mut();
