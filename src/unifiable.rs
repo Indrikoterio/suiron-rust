@@ -237,7 +237,7 @@ impl Unifiable {
                 let mut length_dst = length_src;
                 if id >= length_dst { length_dst = id + 1 }
 
-                let mut new_ss: Vec<Option<Rc<Unifiable>>> = vec![None; length_dst];
+                let mut new_ss: SubstitutionSet = vec![None; length_dst];
 
                 for (i, item) in ss.iter().enumerate() {
                     if let Some(item) = item {
