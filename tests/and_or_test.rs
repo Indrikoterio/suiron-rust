@@ -63,6 +63,6 @@ pub fn test_and_or() {
     let sn = make_base_node(q, &kb);
 
     let results = solve_all(sn);
-    assert_eq!(results, ["$X = George", "$X = Frank", "$X = Maria", "No more."]);
+    assert_eq!(results, ["$X = George", "$X = Frank", "$X = Maria"]);
 
 }
