@@ -133,13 +133,10 @@ impl BuiltInPredicate {
 /// in solution_node.rs.
 ///
 /// # Arguments
-/// * `bip` - [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
-/// * `sn_ref` - reference to
-/// [SolutionNode](../solution_node/struct.SolutionNode.html)
+/// * reference to [SolutionNode](../solution_node/struct.SolutionNode.html)
+/// * [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
 /// # Return
-/// * `Option` -
-/// Some([SubstitutionSet](../substitution_set/type.SubstitutionSet.html))
-/// or None
+/// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
 pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
                              bip: BuiltInPredicate)
                              -> Option<Rc<SubstitutionSet<'a>>> {
@@ -205,11 +202,10 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
 /// </blockquote>
 ///
 /// # Arguments
-/// * `name` - &str
-/// * `terms` - vector of
-/// [Unifiable](../unifiable/enum.Unifiable.html) terms
+/// * name (string)
+/// * vector of [Unifiable](../unifiable/enum.Unifiable.html) terms
 /// # Return
-/// * `formatted string`
+/// * formatted string
 /// # Usage
 /// ```
 /// use suiron::*;
