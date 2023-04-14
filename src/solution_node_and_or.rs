@@ -59,7 +59,7 @@ pub fn next_solution_and<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                                                          sn_ref.kb, ss,
                                                          Rc::clone(&sn));
                         sn_ref.tail_sn = Some(Rc::clone(&tail_sn));
-                        let tail_solution = next_solution(Rc::clone(&tail_sn));
+                        let tail_solution = next_solution(tail_sn);
                         if tail_solution.is_some() { return tail_solution; }
                     },
                 } // match
