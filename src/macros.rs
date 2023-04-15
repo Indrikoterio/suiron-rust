@@ -472,7 +472,9 @@ macro_rules! query {
 #[macro_export]
 macro_rules! unify {
     ($left:expr, $right:expr) => {
-        Goal::BuiltInGoal(BuiltInPredicate::Unify(vec![$left, $right]))
+        Goal::BuiltInGoal(
+            BuiltInPredicate::new("unify".to_string(), Some(vec![$left, $right]))
+        )
     };
 }
 
