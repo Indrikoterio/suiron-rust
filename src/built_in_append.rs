@@ -30,7 +30,7 @@ pub fn next_solution_append<'a>(bip: BuiltInPredicate,
                                 ss: &'a Rc<SubstitutionSet<'a>>)
                                 -> Option<Rc<SubstitutionSet<'a>>> {
 
-    if let BuiltInPredicate::Append(terms) = bip {
+    if let Some(terms) = bip.terms {
 
         let length = terms.len();
         if length < 2 { return None; }
@@ -80,78 +80,9 @@ pub fn next_solution_append<'a>(bip: BuiltInPredicate,
         // Unify new list with last term.
         return last_term.unify(&out, &ss);
     }
-    panic!("next_solution_append() - Invalid built-in predicate.");
+    return None;
 
 } // next_solution_append()
-
-/// Appends terms together to create a list.
-///
-/// The append() predicate requires at least two arguments.
-/// The first n - 1 arguments are input arguments, and the
-/// last argument is the output argument. (All arguments are
-/// unifiable terms.)
-///
-/// Examples:
-///
-/// # Arguments
-/// * vector of Unifiable terms
-/// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
-/// # Result
-/// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
-pub fn append_terms<'a>(terms: Vec<Unifiable>,
-                        ss: Rc<SubstitutionSet<'a>>)
-                        -> Option<Rc<SubstitutionSet<'a>>> {
-
-    let length = terms.len();
-    if length < 2 { return None; }
-
-    let mut out_terms: Vec<Unifiable> = vec![];
-
-    for i in 0..(length - 1) {
-
-        let mut t = terms[i].clone();
-
-        // If logic variable, get ground term.
-        if let Unifiable::LogicVar{id: _, name: _} = t {
-            match get_ground_term(&t, &ss) {
-                Some(new_term) => { t = new_term.clone(); },
-                None => {},
-            }
-        }
-
-        match t {
-            Unifiable::Nil |
-            Unifiable::Anonymous |
-            Unifiable::Atom(_) |
-            Unifiable::SInteger(_) |
-            Unifiable::SFloat(_) |
-            Unifiable::SFunction{name: _, terms: _} |
-            Unifiable::SComplex(_) => { out_terms.push(t); },
-            Unifiable::SLinkedList{term: _, next: _, count: _, tail_var: _} => {
-                let mut list = t;
-                loop {
-                    if let Unifiable::SLinkedList{term, next,
-                                      count: _, tail_var: _} = list {
-                        if *term == Unifiable::Nil { break; }
-                        out_terms.push(*term);
-                        list = *next;
-                    }
-                }
-            },
-            // LogicVar was dealt with above.
-            Unifiable::LogicVar{id: _, name: _} => {},
-        } // match
-
-    } // for
-
-    let out = make_linked_list(false, out_terms);
-    let last_term = terms[length - 1].clone();
-
-    // Unify new list with last term.
-    return last_term.unify(&out, &ss);
-
-} // append_terms()
-
 
 #[cfg(test)]
 mod test {
