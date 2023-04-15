@@ -171,14 +171,9 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
     let chrs = str_to_chars!(s);
 
     // Built-in predicates with no arguments.
-    if s == "!" {  // cut
-        return Ok(Goal::BuiltInGoal(BuiltInPredicate::Cut));
-    }
-    if s == "fail" {
-        return Ok(Goal::BuiltInGoal(BuiltInPredicate::Fail));
-    }
-    if s == "nl" { // new line
-        return Ok(Goal::BuiltInGoal(BuiltInPredicate::NL));
+    if s == "!" || s == "fail" || s == "nl" {
+        let pred = BuiltInPredicate::new(s.to_string(), None);
+        return Ok(Goal::BuiltInGoal(pred));
     }
 
     //--------------------------------------
@@ -195,30 +190,36 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
         // this shouldn't be a problem.
         let (left, right) = get_left_and_right(chrs, index, 2)?;
 
-        let v = vec![left, right];
+        let v = Some(vec![left, right]);
 
         let pred = match infix {
             Infix::Unify => {
-                BuiltInPredicate::Unify(v)
+                let functor = "unify".to_string();
+                BuiltInPredicate::new(functor, v)
             },
             Infix::Equal => {
-                BuiltInPredicate::Equal(v)
+                let functor = "equal".to_string();
+                BuiltInPredicate::new(functor, v)
             },
             Infix::LessThan => {
-                BuiltInPredicate::LessThan(v)
+                let functor = "less_than".to_string();
+                BuiltInPredicate::new(functor, v)
             },
             Infix::LessThanOrEqual => {
-                BuiltInPredicate::LessThanOrEqual(v)
+                let functor = "less_than_or_equal".to_string();
+                BuiltInPredicate::new(functor, v)
             },
             Infix::GreaterThan => {
-                BuiltInPredicate::GreaterThan(v)
+                let functor = "greater_than".to_string();
+                BuiltInPredicate::new(functor, v)
             },
             Infix::GreaterThanOrEqual => {
-                BuiltInPredicate::GreaterThanOrEqual(v)
+                let functor = "greater_than_or_equal".to_string();
+                BuiltInPredicate::new(functor, v)
             },
             _ => {
-                let s = format!("parse_subgoal() - Invalid syntax: {}", s);
-                return Err(s);
+                let err = format!("parse_subgoal() - Invalid syntax: {}", s);
+                return Err(err);
             },
         }; // let match
 
@@ -243,7 +244,7 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
                         },
                     }
                 },
-            }
+            } // match
         },
         Err(err) => { return Err(err); },
     }
@@ -289,50 +290,19 @@ pub fn make_goal(functor: &str, args_str: &str) -> Result<Goal, String> {
 
     let mut args = parse_arguments(args_str)?;
 
-    match functor {
-        "print"      => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Print(args)));
-        },
-        "append"     => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Append(args)));
-        },
-        "functor"    => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Functor(args)));
-        },
-        "include"    => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Include(args)));
-        },
-        "exclude"    => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Exclude(args)));
-        },
-        "print_list" => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::PrintList(args)));
-        },
-        "unify"      => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Unify(args)));
-        },
-        "equal"      => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::Equal(args)));
-        },
-        "less_than"             => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::LessThan(args)));
-        },
-        "less_than_or_equal"    => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::LessThanOrEqual(args)));
-        },
-        "greater_than"          => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::GreaterThan(args)));
-        },
-        "greater_than_or_equal" => {
-            return Ok(Goal::BuiltInGoal(BuiltInPredicate::GreaterThanOrEqual(args)));
-        },
-        _ => {
-            // Create a complex term.
-            let mut unifiables = vec![atom!(functor)];
-            unifiables.append(&mut args);
-            return Ok(Goal::ComplexGoal(Unifiable::SComplex(unifiables)));
-        },
-    } // match
+    if functor == "print" || functor == "append" || functor == "functor" ||
+       functor == "include" || functor == "exclude" ||
+       functor == "print_list" || functor == "unify" || functor == "equal" ||
+       functor == "less_than"    || functor == "less_than_or_equal" ||
+       functor == "greater_than" || functor == "greater_than_or_equal" {
+        let pred = BuiltInPredicate::new(functor.to_string(), Some(args));
+        return Ok(Goal::BuiltInGoal(pred));
+    }
+
+    // Create a complex term.
+    let mut unifiables = vec![atom!(functor)];
+    unifiables.append(&mut args);
+    return Ok(Goal::ComplexGoal(Unifiable::SComplex(unifiables)));
 
 } // make_goal()
 
