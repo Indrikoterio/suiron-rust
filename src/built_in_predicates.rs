@@ -24,6 +24,7 @@ use super::substitution_set::*;
 /// <blockquote>
 /// predicate_name(term1, term2, ...)
 /// <blockquote>
+/*
 #[derive(Debug, Clone, PartialEq)]
 pub enum BuiltInPredicate {
     Print(Vec<Unifiable>),
@@ -42,20 +43,53 @@ pub enum BuiltInPredicate {
     Fail,
     Cut,
 }
+*/
+
+/// Defines built-in predicates, such as print(), append(), etc.
+///
+/// In Suiron source code, built-in predicates have the form:
+/// <blockquote>
+/// functor(term1, term2, ...)
+/// </blockquote>
+#[derive(Debug, Clone, PartialEq)]
+pub struct BuiltInPredicate {
+    pub functor: String,
+    pub terms: Option<Vec<Unifiable>>,
+}
 
 impl BuiltInPredicate {
 
-    /// Recreate logic variables to give them unique IDs.
+    /// Creates a new BuiltInPredicate struct.
+    ///
+    /// # Usage
+    /// ```
+    /// use suiron::*;
+    ///
+    /// // To make: append(a, b, c)
+    /// let app = "append".to_string();
+    /// let terms = vec![atom!("a"), atom!("b"), atom!("c")];
+    /// let pred = BuiltInPredicate::new(app, Some(terms));
+    ///
+    /// // To make a 'fail' predicate:
+    /// let pred = BuiltInPredicate::new("fail".to_string(), None);
+    /// ```
+    #[inline]
+    pub fn new(functor: String, terms: Option<Vec<Unifiable>>) -> Self {
+        BuiltInPredicate { functor, terms }
+    }
+
+    /// Recreates logic variables to give them unique IDs.
     ///
     /// Logic variables in the knowledge base have an ID of 0, but
     /// when a rule is fetched from the knowledge base, the logic
     /// variables must be given unique IDs.
     ///
     /// # Arguments
-    /// * `self`
-    /// * `vars` - set of previously recreated variable IDs
+    /// * self
+    /// * map of previously recreated variable IDs
     /// # Return
-    /// * `recreated BuiltInPredicate`
+    /// * new BuiltInPredicate
+    ///
     /// # Usage
     /// ```
     /// use suiron::*;
@@ -69,63 +103,15 @@ impl BuiltInPredicate {
     /// ```
     pub fn recreate_variables(self, vars: &mut VarMap) -> BuiltInPredicate {
 
-        match self {
-            BuiltInPredicate::Print(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Print(new_terms);
-            },
-            BuiltInPredicate::Append(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Append(new_terms);
-            },
-            BuiltInPredicate::Functor(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Functor(new_terms);
-            },
-            BuiltInPredicate::Include(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Include(new_terms);
-            },
-            BuiltInPredicate::Exclude(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Exclude(new_terms);
-            },
-            BuiltInPredicate::PrintList(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::PrintList(new_terms);
-            },
-            BuiltInPredicate::Unify(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Unify(new_terms);
-            },
-            BuiltInPredicate::Equal(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::Equal(new_terms);
-            },
-            BuiltInPredicate::GreaterThan(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::GreaterThan(new_terms);
-            },
-            BuiltInPredicate::GreaterThanOrEqual(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::GreaterThanOrEqual(new_terms);
-            },
-            BuiltInPredicate::LessThan(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::LessThan(new_terms);
-            },
-            BuiltInPredicate::LessThanOrEqual(terms) => {
-                let new_terms = recreate_vars_terms(terms, vars);
-                return BuiltInPredicate::LessThanOrEqual(new_terms);
-            },
-            BuiltInPredicate::NL   => { BuiltInPredicate::NL },
-            BuiltInPredicate::Fail => { BuiltInPredicate::Fail },
-            BuiltInPredicate::Cut  => { BuiltInPredicate::Cut },
+        if let Some(terms) = self.terms {
+            let new_terms = recreate_vars_terms(terms, vars);
+            return BuiltInPredicate::new(self.functor, Some(new_terms));
         }
+        return BuiltInPredicate::new(self.functor, None);
+
     } // recreate_variables()
 
 } // BuiltInPredicate
-
 
 /// Finds solutions for built-in predicates.
 ///
@@ -146,50 +132,53 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
     if !sn_ref.more_solutions { return None; };
     sn_ref.more_solutions = false;
 
-    match bip {
-        BuiltInPredicate::Print(_) => {
+    match bip.functor.as_str() {
+        "print" => {
             next_solution_print(bip, &sn_ref.ss);
             let ss = Rc::clone(&sn_ref.ss);
             return Some(ss);
         },
-        BuiltInPredicate::Append(_) => {
+        "append" => {
             // next_solution_append writes to ss.
             return next_solution_append(bip, &sn_ref.ss);
         },
-        BuiltInPredicate::Unify(args) => {
-            let left  = &args[0];
-            let right = &args[1];
-            return left.unify(right, &sn_ref.ss);
+        "unify" => {
+            if let Some(terms) = &bip.terms {
+                let left  = &terms[0];
+                let right = &terms[1];
+                return left.unify(right, &sn_ref.ss);
+            }
+            return None;
         },
-        BuiltInPredicate::Equal(args) => {
-            return bip_equal(args, &sn_ref.ss);
+        "equal" => {
+            return bip_equal(bip, &sn_ref.ss);
         },
-        BuiltInPredicate::LessThan(args) => {
-            return bip_less_than(args, &sn_ref.ss);
+        "less_than" => {
+            return bip_less_than(bip, &sn_ref.ss);
         },
-        BuiltInPredicate::LessThanOrEqual(args) => {
-            return bip_less_than_or_equal(args, &sn_ref.ss);
+        "less_than_or_equal" => {
+            return bip_less_than_or_equal(bip, &sn_ref.ss);
         },
-        BuiltInPredicate::GreaterThan(args) => {
-            return bip_greater_than(args, &sn_ref.ss);
+        "greater_than" => {
+            return bip_greater_than(bip, &sn_ref.ss);
         },
-        BuiltInPredicate::GreaterThanOrEqual(args) => {
-            return bip_greater_than_or_equal(args, &sn_ref.ss);
+        "greather_than_or_equal" => {
+            return bip_greater_than_or_equal(bip, &sn_ref.ss);
         },
-        BuiltInPredicate::PrintList(_) => {
+        "print_list" => {
             next_solution_print_list(bip, &sn_ref.ss);
             let ss = Rc::clone(&sn_ref.ss);
             return Some(ss);
         },
-        BuiltInPredicate::NL => { // New Line. This cannot fail.
+        "nl" => { // New Line. This cannot fail.
             print!("\n");
             return Some(Rc::clone(&sn_ref.ss));
         },
-        BuiltInPredicate::Cut => { // !
+        "!" => { // !
             sn_ref.set_no_backtracking();
             return Some(Rc::clone(&sn_ref.ss));
         },
-        BuiltInPredicate::Fail => { return None; }, // always fails
+        "fail" => { return None; }, // always fails
         _ => { panic!("next_solution_bip() - Not implemented yet."); },
     }
 } // next_solution_bip()
@@ -226,55 +215,23 @@ pub fn format_built_in(name: &str, terms: &Vec<Unifiable>) -> String {
     out
 } // format_built_in
 
-
 // Display trait, to display built-in predicates.
 impl fmt::Display for BuiltInPredicate {
-
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let out = match &self {
-            BuiltInPredicate::Print(args) => {
-                format_built_in("print", args)
-            },
-            BuiltInPredicate::Append(args) => {
-                format_built_in("append", args)
-            },
-            BuiltInPredicate::Functor(args) => {
-                format_built_in("functor", args)
-            },
-            BuiltInPredicate::Include(args) => {
-                format_built_in("include", args)
-            },
-            BuiltInPredicate::Exclude(args) => {
-                format_built_in("exclude", args)
-            },
-            BuiltInPredicate::PrintList(args) => {
-                format_built_in("print_list", args)
-            },
-            BuiltInPredicate::Unify(args) => {
-                format!("{} = {}", &args[0], &args[1])
-            },
-            BuiltInPredicate::Equal(args) => {
-                format!("{} == {}", &args[0], &args[1])
-            },
-            BuiltInPredicate::LessThan(args) => {
-                format!("{} < {}", &args[0], &args[1])
-            },
-            BuiltInPredicate::LessThanOrEqual(args) => {
-                format!("{} <= {}", &args[0], &args[1])
-            },
-            BuiltInPredicate::GreaterThan(args) => {
-                format!("{} > {}", &args[0], &args[1])
-            },
-            BuiltInPredicate::GreaterThanOrEqual(args) => {
-                format!("{} >= {}", &args[0], &args[1])
-            },
-            BuiltInPredicate::NL => { "nl".to_string() },
-            BuiltInPredicate::Cut => { "!".to_string() },
-            BuiltInPredicate::Fail => { "fail".to_string() },
-
-        }; // match
-
-        write!(f, "{}", out)
+        if let Some(terms) = &self.terms {
+            let functor = &self.functor;
+            match functor.as_str() {
+                "unify" => {
+                    let (left, right) = (&terms[0], &terms[1]);
+                    return write!(f, "{} = {}", left, right);
+                },
+                _ => {
+                    let out = format_built_in(functor, terms);
+                    return write!(f, "{}", out);
+                },
+            }
+        }
+        write!(f, "Error: Display for BuiltInPredicate")
     }
 } // Display
 
@@ -304,10 +261,12 @@ mod test {
     #[test]
     fn test_display() {
 
-        let print_pred = BuiltInPredicate::Print(two_terms());
+        let functor = "print".to_string();
+        let print_pred = BuiltInPredicate::new(functor, Some(two_terms()));
         assert_eq!("print($X, Klivo)", format!("{}", print_pred));
 
-        let unify_pred = BuiltInPredicate::Unify(two_terms());
+        let functor = "unify".to_string();
+        let unify_pred = BuiltInPredicate::new(functor, Some(two_terms()));
         assert_eq!("$X = Klivo", format!("{}", unify_pred));
     }
 
