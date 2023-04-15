@@ -9,7 +9,7 @@ use super::unifiable::Unifiable;
 /// Prints out terms of an SLinkedList for the predicate print_list().
 ///
 /// This built-in predicate prints out a list of terms in a readable,
-/// comma separated form. <br>It is mainly used for debugging purposes.
+/// comma separated form.<br> It is mainly used for debugging purposes.
 ///
 /// When a logic variable appears in the list, the function prints its
 /// ground term.
@@ -24,7 +24,8 @@ use super::unifiable::Unifiable;
 ///
 /// // Make a print_list() predicate.
 /// let v = vec![list, atom!("Not a list.")];
-/// let print_list_pred = BuiltInPredicate::PrintList(v);
+/// let f = "print_list".to_string();
+/// let print_list_pred = BuiltInPredicate::new(f, Some(v));
 ///
 /// // Call next_solution_print_list() with predicate and substitution set.
 /// let ss = empty_ss!();
@@ -35,49 +36,42 @@ use super::unifiable::Unifiable;
 /// ```
 pub fn next_solution_print_list<'a>(bip: BuiltInPredicate,
                                     ss: &'a Rc<SubstitutionSet<'a>>) {
+    if let Some(terms) = bip.terms {
 
-    match bip { // match
+        if terms.len() == 0 { return; };
 
-        BuiltInPredicate::PrintList(args) => {
+        // Iterate through arguments
+        let mut first = true;
+        for term in terms {
 
-            if args.len() == 0 { return; };
-
-            // Iterate through arguments
-            let mut first = true;
-            for arg in args {
-
-                // If the argument is a variable, get the ground term.
-                let arg = match arg {
-                    Unifiable::LogicVar{id: _, name: _} => {
-                        let ground = get_ground_term(&arg, &ss);
-                        match ground {
-                            None => { arg },
-                            Some(arg) => { arg.clone() },
-                        }
-                    },
-                    _ => arg,
-                };
-
-                // If argument is an SLinkedList
-                if let Unifiable::SLinkedList{term: _, next: _,
-                                  tail_var: _, count: _} = arg {
-                    if !first { print!(",\n"); }
-                    if let Some(term) = get_ground_term(&arg, &ss) {
-                        let s = format_slist(term, &ss);
-                        println!("{}", s);
+            // If the argument is a variable, get the ground term.
+            let term = match term {
+                Unifiable::LogicVar{id: _, name: _} => {
+                    let ground = get_ground_term(&term, &ss);
+                    match ground {
+                        None => { term },
+                        Some(term) => { term.clone() },
                     }
-                    else { println!("{}", arg); }
-                }
-                else { println!("{}", arg); } // Not a list.
-                first = false;
-            } // for...
-        },
-        _ => { panic!("next_solution_print_list() - Invalid built-in predicate."); },
+                },
+                _ => term,
+            };
 
-    } // match
+            // If argument is an SLinkedList
+            if let Unifiable::SLinkedList{term: _, next: _,
+                              tail_var: _, count: _} = term {
+                if !first { print!(",\n"); }
+                if let Some(term) = get_ground_term(&term, &ss) {
+                    let s = format_slist(term, &ss);
+                    println!("{}", s);
+                }
+                else { println!("{}", term); }
+            }
+            else { println!("{}", term); } // Not a list.
+            first = false;
+        } // for...
+    };
 
 } // next_solution_print_list()
-
 
 /// Formats terms of a Suiron list (SLinkedList) for display.
 ///
