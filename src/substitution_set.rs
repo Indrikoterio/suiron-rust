@@ -357,7 +357,8 @@ pub fn get_list<'a>(term: &'a Unifiable, ss: &'a SubstitutionSet)
 /// println!("{:?}", result);  // Prints: Atom("Krypton");
 /// ```
 ///
-pub fn get_constant<'a>(term: &'a Unifiable, ss: &'a SubstitutionSet) -> Option<&'a Unifiable> {
+pub fn get_constant<'a>(term: &'a Unifiable, ss: &'a SubstitutionSet)
+                        -> Option<&'a Unifiable> {
     match *term {
         Unifiable::SFloat(_) |
         Unifiable::SInteger(_) |
