@@ -17,16 +17,17 @@ static FORMAT_SPECIFIER: &str = "%s";
 /// formats them for output, and prints out the result.
 ///
 /// # Arguments
-/// * `bip` - [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
-/// * `ss` - [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
+/// * [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
+/// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
 /// # Usage
 /// ```
 /// use std::rc::Rc;
 /// use suiron::*;
 ///
 /// // Make a print() predicate.
+/// let functor = "print".to_string();
 /// let v = vec![atom!("A"), SInteger(7), atom!("\n")];
-/// let print_pred = BuiltInPredicate::Print(v);
+/// let print_pred = BuiltInPredicate::new(functor, Some(v));
 ///
 /// // Call function with print predicate and substitution set.
 /// let ss = empty_ss!();
@@ -35,24 +36,18 @@ static FORMAT_SPECIFIER: &str = "%s";
 /// ```
 pub fn next_solution_print<'a>(bip: BuiltInPredicate,
                                ss: &'a Rc<SubstitutionSet<'a>>) {
-
-    match bip { // match
-        BuiltInPredicate::Print(args) => {
-            let mut v: Vec<String> = vec![];
-            // Collect strings.
-            for arg in args {
-                match get_ground_term(&arg, &ss) {
-                    Some(term) => { v.push(format!("{}", term)); },
-                    None =>       { v.push(format!("{}", arg)); },
-                }
+    let mut v: Vec<String> = vec![];
+    if let Some(terms) = bip.terms {
+        // Collect ground terms into v.
+        for term in terms {
+            match get_ground_term(&term, &ss) {
+                Some(ground_term) => { v.push(format!("{}", ground_term)); },
+                None              => { v.push(format!("{}", term)); },
             }
-            print!("{}", format_for_print_pred(&v));
-        },
-        _ => { panic!("next_solution_print() - Invalid built-in predicate."); },
-    } // match
-
+        }
+        print!("{}", format_for_print_pred(&v));
+    }
 } // next_solution_print()
-
 
 /// Formats a list of strings for the built-in predicate print().
 ///
@@ -70,9 +65,9 @@ pub fn next_solution_print<'a>(bip: BuiltInPredicate,
 /// [next_solution_print()](../built_in_print/fn.next_solution_print.html).
 ///
 /// # Arguments
-/// * `the_strings` - vector of Strings
+/// * vector of Strings
 /// # Return
-/// * `String`
+/// * a String
 /// # Usage
 /// ```
 /// use suiron::*;
