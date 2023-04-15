@@ -1,11 +1,23 @@
-// Test the Append predicate.
+// Test the append predicate.
 //
-// The append predicate is used to join terms into a list. For example:
+// The append predicate is used to join terms into a list.
+// For example:
 //
-// $X = raspberry, append(cherry, [strawberry, blueberry], $X, $Out).
+// test_append($Out) :- $X = red, $Y = [green, blue, purple],
+//                      append($X, orange, $Y, $Out).
 //
-// The last term of append() is an output term. For the above, $Out
-// should unify with: [cherry, strawberry, blueberry, raspberry]
+// For the query 'append($X)', the result will be:
+//
+//    $X = [red, orange, green, blue, purple]
+//
+// ------------------ A second test. ------------------
+//
+// test_append($Out) :- $X = raspberry, append(cherry,
+//                      [strawberry, blueberry], $X, $Out).
+//
+// For the query 'append($X)', the result will be:
+//
+//    $X = [cherry, strawberry, blueberry, raspberry]
 //
 // Cleve Lendon  2023
 
@@ -14,13 +26,6 @@ use std::rc::Rc;
 
 #[test]
 pub fn test_append() {
-
-    // Make some colours.
-    let red    = atom!("red");
-    let orange = atom!("orange");
-    let green  = atom!("green");
-    let blue   = atom!("blue");
-    let purple = atom!("purple");
 
     /*
       Suiron rule:
@@ -33,6 +38,13 @@ pub fn test_append() {
      */
 
     let mut kb = KnowledgeBase::new();
+
+    // Make some colours.
+    let red    = atom!("red");
+    let orange = atom!("orange");
+    let green  = atom!("green");
+    let blue   = atom!("blue");
+    let purple = atom!("purple");
 
     // A lot of this set-up could be done with parse_
     // functions, but let's do it the hard way.
@@ -48,7 +60,9 @@ pub fn test_append() {
 
     let u1 = unify!(x(), red);
     let u2 = unify!(y(), list);
-    let append_pred = BuiltInPredicate::Append(vec![x(), orange, y(), out()]);
+    let append = "append".to_string();
+    let terms = vec![x(), orange, y(), out()];
+    let append_pred = BuiltInPredicate::new(append, Some(terms));
     let append_goal = Goal::BuiltInGoal(append_pred);
 
     let body = operator_and!(u1, u2, append_goal);
@@ -76,14 +90,15 @@ pub fn test_append() {
         None => { panic!("No solution."); },
     } // match solution
 
+    // ------------------ A second test. ------------------
 
-    // A second test.
+    let mut kb = KnowledgeBase::new();
 
-    let rule = parse_rule("test_append2($Out) :- $X = raspberry, \
+    let rule = parse_rule("test_append($Out) :- $X = raspberry, \
                append(cherry, [strawberry, blueberry], $X, $Out).").unwrap();
     add_rules!(&mut kb, rule);
 
-    let query = parse_query("test_append2($Z)").unwrap();
+    let query = parse_query("test_append($Z)").unwrap();
     let query = Rc::new(query);
     let base_node = make_base_node(Rc::clone(&query), &kb);
 
