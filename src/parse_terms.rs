@@ -435,15 +435,18 @@ mod test {
 
         // Check: ""Hello"
         if let Some(error_message) = check_quotes("\"\"Hello\"", 3) {
-            assert_eq!(error_message, "check_quotes() - Unmatched quotes: \"\"Hello\"");
+            assert_eq!(error_message,
+                       "check_quotes() - Unmatched quotes: \"\"Hello\"");
         }
         // Check: x"Hello"
         if let Some(error_message) = check_quotes("x\"Hello\"", 2) {
-            assert_eq!(error_message, "check_quotes() - Text before opening quote: x\"Hello\"");
+            assert_eq!(error_message,
+                       "check_quotes() - Text before opening quote: x\"Hello\"");
         }
         // Check: "Hello"x
         if let Some(error_message) = check_quotes("\"Hello\"x", 2) {
-            assert_eq!(error_message, "check_quotes() - Text after closing quote: \"Hello\"x");
+            assert_eq!(error_message,
+                       "check_quotes() - Text after closing quote: \"Hello\"x");
         }
         // Check: "Hello"
         if let Some(error_message) = check_quotes("\"Hello\"", 2) {
