@@ -12,10 +12,10 @@
 //! Creates an empty substitution set, with an Rc-pointer.<br>
 //! [logic_var!](../macro.logic_var.html) -
 //! Creates a logic variable from a string slice and an optional ID.<br>
-//! [operator_and!](../macro.operator_and.html) -
-//! Creates an And operator from a list of goals.<br>
-//! [operator_or!](../macro.operator_or.html) -
-//! Creates an Or operator from a list of terms.<br>
+//! [and_goal!](../macro.and_goal.html) -
+//! Creates an And goal from a list of goals.<br>
+//! [or_goal!](../macro.or_goal.html) -
+//! Creates an Or goal from a list of goals.<br>
 //! [pred!](../macro.pred.html)
 //! Creates a built-in predicate, wrapped in a Goal.<br>
 //! [query!](../macro.query.html) -
@@ -307,14 +307,14 @@ macro_rules! scomplex {
 /// let g1 = parse_subgoal("parent($Grandfather, $P)").unwrap();
 /// let g2 = parse_subgoal("parent($P, $Child)").unwrap();
 /// let g3 = parse_subgoal("male($Grandfather)").unwrap();
-/// let the_and = operator_and!(g1, g2, g3);
+/// let the_and = and_goal!(g1, g2, g3);
 /// ```
 #[macro_export]
-macro_rules! operator_and {
+macro_rules! and_goal {
     ($($goal:expr),*) => (
         Goal::OperatorGoal(Operator::And(vec!($($goal),*)))
     );
-} // operator_and!
+} // and_goal!
 
 /// Creates an Or operator, and wraps it in a Goal.
 ///
@@ -339,14 +339,14 @@ macro_rules! operator_and {
 /// // mother($X, $Y); father($X, $Y)
 /// let g1 = parse_subgoal("mother($X, $Y)").unwrap();
 /// let g2 = parse_subgoal("father($X, $Y)").unwrap();
-/// let the_or = operator_or!(g1, g2);
+/// let the_or = or_goal!(g1, g2);
 /// ```
 #[macro_export]
-macro_rules! operator_or {
+macro_rules! or_goal {
     ($($goal:expr),*) => (
         Goal::OperatorGoal(Operator::Or(vec!($($goal),*)))
     );
-} // operator_or!
+} // or_goal!
 
 /// Converts a string slice to a vector of characters.
 ///
