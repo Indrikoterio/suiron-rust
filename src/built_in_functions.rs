@@ -22,14 +22,12 @@ use crate::chars_to_string;
 /// with the `other` [Unifiable](../unifiable/enum.Unifiable.html) term.
 /// 
 /// # Arguments
-/// * `name`  - of function
-/// * `terms` - vector of Unifiable terms
-/// * `other` - other Unifiable term
-/// * `ss`    - [SubstitutionSet](../substitution_set/index.html)
+/// * name of function
+/// * terms - vector of Unifiable terms
+/// * other Unifiable term
+/// * [SubstitutionSet](../substitution_set/index.html)
 /// # Returns
-/// * `Option` -
-/// Some([SubstitutionSet](../substitution_set/index.html))
-/// or None.
+/// * [SubstitutionSet](../substitution_set/index.html) or None.
 /// # Usage
 /// ```
 /// use std::rc::Rc;
@@ -83,11 +81,10 @@ pub fn unify_sfunction<'a>(name: &str, terms: &'a Vec<Unifiable>,
 /// * parse_function() is very similar to
 /// [parse_complex()](../s_complex/fn.parse_complex.html).
 /// # Arguments
-/// * `to_parse` - &str
+/// * string to parse
 /// # Returns
-/// * `Result` - Ok(
-/// [SFunction](../unifiable/enum.Unifiable.html#variant.SFunction))
-/// or Err(message)
+/// * [SFunction](../unifiable/enum.Unifiable.html#variant.SFunction)
+/// or error message
 /// # Usage
 /// ```
 /// use suiron::*;
