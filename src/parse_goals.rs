@@ -187,7 +187,7 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
         // this shouldn't be a problem.
         let (left, right) = get_left_and_right(chrs, index, 2)?;
 
-        let pred = match infix {
+        let goal = match infix {
             Infix::Unify => { pred!("unify", left, right) },
             Infix::Equal => { pred!("equal", left, right) },
             Infix::LessThan           => { pred!("less_than", left, right) },
@@ -200,7 +200,7 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
             },
         }; // let match
 
-        return Ok(Goal::BuiltInGoal(pred));
+        return Ok(goal);
 
     } // if infix != Infix::None
 
