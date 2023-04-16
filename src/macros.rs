@@ -16,6 +16,8 @@
 //! Creates an And operator from a list of goals.<br>
 //! [operator_or!](../macro.operator_or.html) -
 //! Creates an Or operator from a list of terms.<br>
+//! [pred!](../macro.pred.html)
+//! Creates a built-in predicate.<br>
 //! [query!](../macro.query.html) -
 //! Creates a query from a list of terms.<br>
 //! [rc_cell!](../macro.rc_cell.html) -
@@ -497,5 +499,36 @@ macro_rules! unify {
 macro_rules! sfunction {
     ($name:expr, $($term:expr),*) => {
         Unifiable::SFunction{ name: $name.to_string(), terms: vec!($($term),*) }
+    };
+}
+
+/// Creates a built-in predicate.
+///
+/// # Arguments
+/// * functor
+/// * list of [Unifiable](../suiron/unifiable/enum.Unifiable.html) terms (Optional)
+/// # Return
+/// * [BuiltInPredicate](../suiron/built_in_predicates/struct.BuiltInPredicate.html)
+///
+/// # Usage
+/// ```
+/// use suiron::*;
+///
+/// // Make a fail predicate. (No terms.)
+/// let fail_pred = pred!("fail");
+///
+/// // Make a unify predicate.
+/// let x = logic_var!("$X");
+/// let n = SFloat(3.0);
+/// let unify_pred = pred!("unify", x, n);
+/// println!("{}", unify_pred);  // Prints: $X = 3
+/// ```
+#[macro_export]
+macro_rules! pred {
+    ($functor:expr) => {  // For predicates without terms.
+        BuiltInPredicate{ functor: $functor.to_string(), terms: None }
+    };
+    ($functor:expr, $($term:expr),*) => {
+        BuiltInPredicate{ functor: $functor.to_string(), terms: Some(vec!($($term),*)) }
     };
 }
