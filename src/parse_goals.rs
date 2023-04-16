@@ -124,11 +124,11 @@ pub fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize)
 /// This method assumes that index1 and index2 are valid.
 ///
 /// # Arguments
-/// * `complex` - term (string)
-/// * `index1` - index of left parenthesis
-/// * `index2` - index of right parenthesis
+/// * complex term (string)
+/// * index of left parenthesis
+/// * index of right parenthesis
 /// # Return
-/// * `(String, String)`
+/// * (String, String)
 ///
 fn split_complex_term(complex: Vec<char>, index1: usize, index2: usize)
                       -> (String, String) {
@@ -154,10 +154,6 @@ fn split_complex_term(complex: Vec<char>, index1: usize, index2: usize)
 /// # Note
 /// * This function does not parse And or Or operators. See
 /// [generate_goal()](../tokenizer/fn.generate_goal.html)
-/// * The Not and Time operators are dealt with first, because they
-/// enclose subgoals. Eg.
-///    not($X = $Y)
-///    time(qsort)
 ///
 pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
 
