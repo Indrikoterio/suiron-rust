@@ -65,7 +65,7 @@ pub fn test_append() {
     let append_pred = BuiltInPredicate::new(append, Some(terms));
     let append_goal = Goal::BuiltInGoal(append_pred);
 
-    let body = operator_and!(u1, u2, append_goal);
+    let body = and_goal!(u1, u2, append_goal);
 
     let rule = make_rule(head, body);
     add_rules!(&mut kb, rule);
