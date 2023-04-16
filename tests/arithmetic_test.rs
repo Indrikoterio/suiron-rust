@@ -41,7 +41,7 @@ pub fn test_arithmetic() {
     let body = operator_and!(uni1, uni2, uni3, uni4);
     let head = scomplex!(atom!("calculate"), x(), y(), out());
 
-    let rule = make_rule(head, Goal::OperatorGoal(body));
+    let rule = make_rule(head, body);
     add_rules!(&mut kb, rule);
 
     // new rule
@@ -52,7 +52,7 @@ pub fn test_arithmetic() {
     let body = operator_or!(goal1, goal2);
 
     let head = scomplex!(atom!("test"), out());
-    let rule = make_rule(head, Goal::OperatorGoal(body));
+    let rule = make_rule(head, body);
     add_rules!(&mut kb, rule);
 
     let query = query!(atom!("test"), x());
