@@ -38,7 +38,7 @@ pub fn test_arithmetic() {
     let uni3 = unify!(c(), multiply1);
     let uni4 = unify!(out(), divide1);
 
-    let body = operator_and!(uni1, uni2, uni3, uni4);
+    let body = and_goal!(uni1, uni2, uni3, uni4);
     let head = scomplex!(atom!("calculate"), x(), y(), out());
 
     let rule = make_rule(head, body);
@@ -49,7 +49,7 @@ pub fn test_arithmetic() {
     let c2 = scomplex!(atom!("calculate"), SFloat(3.0), SFloat(-7.0), out());
     let goal1 = Goal::ComplexGoal(c1);
     let goal2 = Goal::ComplexGoal(c2);
-    let body = operator_or!(goal1, goal2);
+    let body = or_goal!(goal1, goal2);
 
     let head = scomplex!(atom!("test"), out());
     let rule = make_rule(head, body);
