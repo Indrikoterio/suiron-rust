@@ -48,7 +48,7 @@ impl Operator {
     /// let m = parse_subgoal("mother($X, $Y)").unwrap();
     /// let f = parse_subgoal("father($X, $Y)").unwrap();
     /// let s = parse_subgoal("sibling($X, $Y)").unwrap();
-    /// let mfs = operator_or!(m, f, s); // mother or father or sibling
+    /// let mfs = Operator::Or(vec![m, f, s]); // mother or father or sibling
     ///
     /// let (head, tail) = mfs.split_head_tail();
     /// // Head is a Goal: mother
@@ -148,7 +148,7 @@ impl Operator {
     /// // Make an And operator: parent($X, $Y), female($X)
     /// let parent = parse_subgoal("parent($X, $Y)").unwrap();
     /// let female = parse_subgoal("female($X)").unwrap();
-    /// let op = operator_and!(parent, female);
+    /// let op = Operator::And(vec![parent, female]);
     ///
     /// let goal = op.get_subgoal(1); // Get second subgoal.
     /// println!("{}", goal);  // Prints: female($X)
@@ -238,17 +238,17 @@ mod test {
         scomplex!(atom!("father"), x(), y())  // father($X, $Y)
     }
 
-    // Functions which make Operators.
+    // Functions which make operators.
     fn make_and() -> operator::Operator {
         let goal1 = Goal::ComplexGoal(make_parent());
         let goal2 = Goal::ComplexGoal(make_male());
-        operator_and!(goal1, goal2) // parent($X, $Y), male($X)
+        Operator::And(vec![goal1, goal2])
     }
 
     fn make_or() -> operator::Operator {
         let goal1 = Goal::ComplexGoal(make_mother());
         let goal2 = Goal::ComplexGoal(make_father());
-        operator_or!(goal1, goal2) // mother($X, $Y); father($X, $Y)
+        Operator::Or(vec![goal1, goal2])
     }
 
     // Test creation and display of operators.
@@ -288,7 +288,7 @@ mod test {
     #[test]
     #[should_panic]
     fn test_split_head_tail_panic2() {
-        let and_op = operator_and!();
+        let and_op = Operator::And(vec![]);
         and_op.split_head_tail();
     }
 
