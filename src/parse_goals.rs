@@ -2,6 +2,7 @@
 //!
 
 use crate::atom;
+use crate::pred;
 use crate::str_to_chars;
 use crate::chars_to_string;
 
@@ -186,33 +187,13 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
         // this shouldn't be a problem.
         let (left, right) = get_left_and_right(chrs, index, 2)?;
 
-        let v = Some(vec![left, right]);
-
         let pred = match infix {
-            Infix::Unify => {
-                let functor = "unify".to_string();
-                BuiltInPredicate::new(functor, v)
-            },
-            Infix::Equal => {
-                let functor = "equal".to_string();
-                BuiltInPredicate::new(functor, v)
-            },
-            Infix::LessThan => {
-                let functor = "less_than".to_string();
-                BuiltInPredicate::new(functor, v)
-            },
-            Infix::LessThanOrEqual => {
-                let functor = "less_than_or_equal".to_string();
-                BuiltInPredicate::new(functor, v)
-            },
-            Infix::GreaterThan => {
-                let functor = "greater_than".to_string();
-                BuiltInPredicate::new(functor, v)
-            },
-            Infix::GreaterThanOrEqual => {
-                let functor = "greater_than_or_equal".to_string();
-                BuiltInPredicate::new(functor, v)
-            },
+            Infix::Unify => { pred!("unify", left, right) },
+            Infix::Equal => { pred!("equal", left, right) },
+            Infix::LessThan           => { pred!("less_than", left, right) },
+            Infix::LessThanOrEqual    => { pred!("less_than_or_equal", left, right) },
+            Infix::GreaterThan        => { pred!("greater_than", left, right) },
+            Infix::GreaterThanOrEqual => { pred!("greater_than_or_equal", left, right) },
             _ => {
                 let err = format!("parse_subgoal() - Invalid syntax: {}", s);
                 return Err(err);
