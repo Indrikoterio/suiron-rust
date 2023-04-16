@@ -283,7 +283,7 @@ macro_rules! scomplex {
     );
 } // scomplex!
 
-/// Creates an And operator.
+/// Creates an And operator, and wraps it in a Goal.
 ///
 /// The [And](../suiron/operator/enum.Operator.html#variant.And)
 /// operator is represented in Suiron source code by a comma separated
@@ -298,7 +298,7 @@ macro_rules! scomplex {
 /// # Arguments
 /// * list of [Goals](../suiron/goal/enum.Goal.html)
 /// # Return
-/// * [And](../suiron/operator/enum.Operator.html#variant.And) operator
+/// * [Goal](../suiron/goal/enum.Goal.html#variant.OperatorGoal)
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -312,11 +312,11 @@ macro_rules! scomplex {
 #[macro_export]
 macro_rules! operator_and {
     ($($goal:expr),*) => (
-        Operator::And(vec!($($goal),*))
+        Goal::OperatorGoal(Operator::And(vec!($($goal),*)))
     );
 } // operator_and!
 
-/// Creates an Or operator.
+/// Creates an Or operator, and wraps it in a Goal.
 ///
 /// The [Or](../suiron/operator/enum.Operator.html#variant.Or)
 /// operator is represented in Suiron source by a list of goals
@@ -331,7 +331,7 @@ macro_rules! operator_and {
 /// # Arguments
 /// * list of [Goals](../suiron/goal/enum.Goal.html)
 /// # Return
-/// * [Or](../suiron/operator/enum.Operator.html#variant.Or) operator
+/// * [Goal](../suiron/goal/enum.Goal.html#variant.OperatorGoal)
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -344,7 +344,7 @@ macro_rules! operator_and {
 #[macro_export]
 macro_rules! operator_or {
     ($($goal:expr),*) => (
-        Operator::Or(vec!($($goal),*))
+        Goal::OperatorGoal(Operator::Or(vec!($($goal),*)))
     );
 } // operator_or!
 
