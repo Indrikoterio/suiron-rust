@@ -22,10 +22,10 @@
 //! Creates a query from a list of terms.<br>
 //! [rc_cell!](../macro.rc_cell.html) -
 //! Creates a smart pointer to mutable data.<br>
-//! [sfunction!](../macro.sfunction.html) -
-//! Creates a built-in function.<br>
 //! [scomplex!](../macro.scomplex.html) -
 //! Creates a complex term (= compound term).<br>
+//! [sfunction!](../macro.sfunction.html) -
+//! Creates a built-in function.<br>
 //! [slist!](../macro.slist.html) - Builds a Suiron list.<br>
 //! [str_to_chars!](../macro.str_to_chars.html) -
 //! Converts a string slice to a vector of characters.<br>
