@@ -33,7 +33,7 @@ pub fn test_and_or() {
     let father = parse_subgoal("father($X, $Y)").unwrap();
     let mother = parse_subgoal("mother($X, $Y)").unwrap();
     let or = operator_or!(father, mother);
-    let r1 = make_rule(parent, Goal::OperatorGoal(or));
+    let r1 = make_rule(parent, or);
 
     // relative($X, $Y) :- grandfather($X, $Y); father($X, $Y);
     //                     grandmother($X, $Y); mother($X, $Y).
@@ -43,14 +43,14 @@ pub fn test_and_or() {
     let father = parse_subgoal("father($X, $Y)").unwrap();
     let mother = parse_subgoal("mother($X, $Y)").unwrap();
     let or2 = operator_or!(grandfather, father, grandmother, mother);
-    let r2 = make_rule(relative, Goal::OperatorGoal(or2));
+    let r2 = make_rule(relative, or2);
 
     // grandfather($X, $Y) :- father($X, $Z), parent($Z, $Y).
     let father = parse_subgoal("father($X, $Z)").unwrap();
     let parent = parse_subgoal("parent($Z, $Y)").unwrap();
     let and = operator_and!(father, parent);
     let grandfather = parse_complex("grandfather($X, $Y)").unwrap();
-    let r3 = make_rule(grandfather, Goal::OperatorGoal(and));
+    let r3 = make_rule(grandfather, and);
 
     // grandmother() deliberately not defined.
 
