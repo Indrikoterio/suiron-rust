@@ -57,7 +57,7 @@ pub fn test_backchaining() {
     let g6 = Goal::ComplexGoal(c6);
     let g7 = Goal::ComplexGoal(c7);
     let body = operator_and!(g6, g7);
-    let r2 = make_rule(head, Goal::OperatorGoal(body));
+    let r2 = make_rule(head, body);
 
     add_rules!(&mut kb, r1, r2);
 
