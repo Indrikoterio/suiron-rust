@@ -450,7 +450,7 @@ mod test {
         // Make an And goal: father($X, $Z), father($Z, $Y)
         let goal1 = parse_subgoal("father($X, $Z)").unwrap();
         let goal2 = parse_subgoal("father($Z, $Y)").unwrap();
-        let goal3 = operator_and!(goal1, goal2);
+        let goal3 = and_goal!(goal1, goal2);
 
         let ss = empty_ss!();
         let node = make_solution_node(Rc::new(goal3), &kb, ss, base_node);
