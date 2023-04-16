@@ -66,7 +66,6 @@ pub fn test_append() {
     let append_goal = Goal::BuiltInGoal(append_pred);
 
     let body = operator_and!(u1, u2, append_goal);
-    let body = Goal::OperatorGoal(body);
 
     let rule = make_rule(head, body);
     add_rules!(&mut kb, rule);
