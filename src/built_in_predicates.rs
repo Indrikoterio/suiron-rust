@@ -20,33 +20,6 @@ use super::substitution_set::*;
 
 /// Defines built-in predicates, such as print(), append(), etc.
 ///
-/// In Suiron source code, built-in predicates look like complex terms:
-/// <blockquote>
-/// predicate_name(term1, term2, ...)
-/// <blockquote>
-/*
-#[derive(Debug, Clone, PartialEq)]
-pub enum BuiltInPredicate {
-    Print(Vec<Unifiable>),
-    Append(Vec<Unifiable>),
-    Functor(Vec<Unifiable>),
-    Include(Vec<Unifiable>),
-    Exclude(Vec<Unifiable>),
-    PrintList(Vec<Unifiable>),
-    Unify(Vec<Unifiable>),
-    Equal(Vec<Unifiable>),
-    LessThan(Vec<Unifiable>),
-    LessThanOrEqual(Vec<Unifiable>),
-    GreaterThan(Vec<Unifiable>),
-    GreaterThanOrEqual(Vec<Unifiable>),
-    NL,  // New Line
-    Fail,
-    Cut,
-}
-*/
-
-/// Defines built-in predicates, such as print(), append(), etc.
-///
 /// In Suiron source code, built-in predicates have the form:
 /// <blockquote>
 /// functor(term1, term2, ...)
