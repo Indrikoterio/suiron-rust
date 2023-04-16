@@ -11,6 +11,7 @@ use super::unifiable::{*, Unifiable::*};
 use super::built_in_functions::*;
 
 use crate::atom;
+use crate::sfunction;
 use crate::str_to_chars;
 use crate::chars_to_string;
 
@@ -373,21 +374,12 @@ pub fn parse_term(to_parse: &str) -> Result<Unifiable, String> {
        infix == Infix::Multiply || infix == Infix::Divide {
 
         let (left, right) = get_left_and_right(chrs, index, 1)?;
-        let terms = vec![left, right];
 
         let sfunc = match infix {
-            Infix::Plus => {
-                Unifiable::SFunction{name: "add".to_string(), terms}
-            },
-            Infix::Minus => {
-                Unifiable::SFunction{name: "subtract".to_string(), terms}
-            },
-            Infix::Multiply => {
-                Unifiable::SFunction{name: "multiply".to_string(), terms}
-            },
-            Infix::Divide => {
-                Unifiable::SFunction{name: "divide".to_string(), terms}
-            },
+            Infix::Plus     => { sfunction!("add", left, right) },
+            Infix::Minus    => { sfunction!("subtract", left, right) },
+            Infix::Multiply => { sfunction!("multiply", left, right) },
+            Infix::Divide   => { sfunction!("divide", left, right) },
             _ => {
                 let s = format!("parse_term() - Invalid infix {}", infix);
                 return Err(s);
