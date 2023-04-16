@@ -17,7 +17,7 @@
 //! [operator_or!](../macro.operator_or.html) -
 //! Creates an Or operator from a list of terms.<br>
 //! [pred!](../macro.pred.html)
-//! Creates a built-in predicate.<br>
+//! Creates a built-in predicate, wrapped in a Goal.<br>
 //! [query!](../macro.query.html) -
 //! Creates a query from a list of terms.<br>
 //! [rc_cell!](../macro.rc_cell.html) -
@@ -502,13 +502,13 @@ macro_rules! sfunction {
     };
 }
 
-/// Creates a built-in predicate.
+/// Creates a built-in predicate, wrapped in a Goal.
 ///
 /// # Arguments
 /// * functor
-/// * list of [Unifiable](../suiron/unifiable/enum.Unifiable.html) terms (Optional)
+/// * list of [Unifiable](../suiron/unifiable/enum.Unifiable.html) terms (If any.)
 /// # Return
-/// * [BuiltInPredicate](../suiron/built_in_predicates/struct.BuiltInPredicate.html)
+/// * [BuiltInGoal](../suiron/goal/enum.Goal.html#variant.BuiltInGoal)
 ///
 /// # Usage
 /// ```
@@ -526,9 +526,15 @@ macro_rules! sfunction {
 #[macro_export]
 macro_rules! pred {
     ($functor:expr) => {  // For predicates without terms.
-        BuiltInPredicate{ functor: $functor.to_string(), terms: None }
+        Goal::BuiltInGoal(
+            BuiltInPredicate{ functor: $functor.to_string(),
+                              terms: None }
+        )
     };
     ($functor:expr, $($term:expr),*) => {
-        BuiltInPredicate{ functor: $functor.to_string(), terms: Some(vec!($($term),*)) }
+        Goal::BuiltInGoal(
+            BuiltInPredicate{ functor: $functor.to_string(),
+                              terms: Some(vec!($($term),*)) }
+        )
     };
 }
