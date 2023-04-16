@@ -316,8 +316,7 @@ pub fn test_kb() -> KnowledgeBase {
     let cmplx7 = scomplex!(father(), z(), y());
     let goal1  = Goal::ComplexGoal(cmplx6);
     let goal2  = Goal::ComplexGoal(cmplx7);
-    let and_op = operator_and!(goal1, goal2);
-    let goal3  = Goal::OperatorGoal(and_op);
+    let goal3  = operator_and!(goal1, goal2);
     let rule1  =  Rule{head: cmplx5, body: goal3};
 
     // grandfather($X, $Y) :- father($X, $Z), mother($Z, $Y).
@@ -326,8 +325,7 @@ pub fn test_kb() -> KnowledgeBase {
     let cmplx7 = scomplex!(mother(), z(), y());
     let goal1  = Goal::ComplexGoal(cmplx6);
     let goal2  = Goal::ComplexGoal(cmplx7);
-    let and_op = operator_and!(goal1, goal2);
-    let goal3  = Goal::OperatorGoal(and_op);
+    let goal3 = operator_and!(goal1, goal2);
     let rule2  =  Rule{head: cmplx5, body: goal3};
 
     // Create a knowledge base and add in the facts and rules.
@@ -387,8 +385,7 @@ mod test {
         let c3 = c3();
         let goal1 = Goal::ComplexGoal(c2);
         let goal2 = Goal::ComplexGoal(c3);
-        let op    = operator_and!(goal1, goal2);  // father($X, $Z), father($Z, $Y)
-        let goal3 = Goal::OperatorGoal(op);
+        let goal3 = operator_and!(goal1, goal2);  // father($X, $Z), father($Z, $Y)
         // grandfather($X, $Y) :- father($X, $Z), father($Z, $Y).
         Rule{head: c1, body: goal3}
     }
