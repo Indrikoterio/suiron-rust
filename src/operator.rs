@@ -94,7 +94,7 @@ impl Operator {
     /// // Make an And operator: parent($X, $Y), female($X)
     /// let parent = parse_subgoal("parent($X, $Y)").unwrap();
     /// let female = parse_subgoal("female($X)").unwrap();
-    /// let op = operator_and!(parent, female);
+    /// let op = and_goal!(parent, female);
     ///
     /// let mut var_map = VarMap::new();
     /// let op2 = op.recreate_variables(&mut var_map);
