@@ -102,8 +102,8 @@ mod test {
         let base_node = make_base_node(Rc::new(query), &kb);
 
         // Make an append() predicate.
-        let append_pred = match make_goal("append",
-                                          "3.14159, [A, B, C], 6, $Out") {
+        let append_pred = match parse_subgoal(
+                          "append(3.14159, [A, B, C], 6, $Out)") {
             Ok(goal) => { goal },
             Err(err) => { panic!("{}", err); },
         };
