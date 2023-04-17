@@ -115,6 +115,20 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
             // next_solution_append writes to ss.
             return next_solution_append(bip, &sn_ref.ss);
         },
+        "functor" => {
+            panic!("Implement this: functor()");
+        },
+        "include" => {
+            panic!("Implement this: include()");
+        },
+        "exclude" => {
+            panic!("Implement this: exclude()");
+        },
+        "print_list" => {
+            next_solution_print_list(bip, &sn_ref.ss);
+            let ss = Rc::clone(&sn_ref.ss);
+            return Some(ss);
+        },
         "unify" => {
             if let Some(terms) = &bip.terms {
                 let left  = &terms[0];
@@ -135,13 +149,8 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
         "greater_than" => {
             return bip_greater_than(bip, &sn_ref.ss);
         },
-        "greather_than_or_equal" => {
+        "greater_than_or_equal" => {
             return bip_greater_than_or_equal(bip, &sn_ref.ss);
-        },
-        "print_list" => {
-            next_solution_print_list(bip, &sn_ref.ss);
-            let ss = Rc::clone(&sn_ref.ss);
-            return Some(ss);
         },
         "nl" => { // New Line. This cannot fail.
             print!("\n");
@@ -152,7 +161,8 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
             return Some(Rc::clone(&sn_ref.ss));
         },
         "fail" => { return None; }, // always fails
-        _ => { panic!("next_solution_bip() - Not implemented yet."); },
+        _ => { panic!("next_solution_bip() - Not implemented yet: {}",
+                       bip.functor.as_str()); },
     }
 } // next_solution_bip()
 
@@ -191,20 +201,22 @@ pub fn format_built_in(name: &str, terms: &Vec<Unifiable>) -> String {
 // Display trait, to display built-in predicates.
 impl fmt::Display for BuiltInPredicate {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Some(terms) = &self.terms {
-            let functor = &self.functor;
-            match functor.as_str() {
-                "unify" => {
-                    let (left, right) = (&terms[0], &terms[1]);
-                    return write!(f, "{} = {}", left, right);
-                },
-                _ => {
-                    let out = format_built_in(functor, terms);
-                    return write!(f, "{}", out);
-                },
-            }
+        let func = self.functor.as_str();
+        match &self.terms {
+            Some(terms) => {
+                match func {
+                    "unify" => {
+                        let (left, right) = (&terms[0], &terms[1]);
+                        return write!(f, "{} = {}", left, right);
+                    },
+                    _ => {
+                        let out = format_built_in(func, terms);
+                        return write!(f, "{}", out);
+                    },
+                }
+            },
+            None => { return write!(f, "{}", func); }
         }
-        write!(f, "Error: Display for BuiltInPredicate")
     }
 } // Display
 
