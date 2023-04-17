@@ -17,7 +17,7 @@
 //! [or_goal!](../macro.or_goal.html) -
 //! Creates an Or goal from a list of goals.<br>
 //! [pred!](../macro.pred.html)
-//! Creates a built-in predicate, wrapped in a Goal.<br>
+//! Creates a built-in predicate or complex term, and wraps it in a Goal.<br>
 //! [query!](../macro.query.html) -
 //! Creates a query from a list of terms.<br>
 //! [rc_cell!](../macro.rc_cell.html) -
@@ -502,19 +502,19 @@ macro_rules! sfunction {
     };
 }
 
-/// Creates a built-in predicate, wrapped in a Goal.
+/// Creates a built-in predicate or complex term, and wraps it in a Goal.
 ///
 /// # Arguments
 /// * functor
 /// * list of [Unifiable](../suiron/unifiable/enum.Unifiable.html) terms (If any.)
 /// # Return
-/// * [BuiltInGoal](../suiron/goal/enum.Goal.html#variant.BuiltInGoal)
+/// * [Goal](../suiron/goal/enum.Goal.html)
 ///
 /// # Usage
 /// ```
 /// use suiron::*;
 ///
-/// // Make a fail predicate. (No terms.)
+/// // Make a fail predicate. (No arguments.)
 /// let fail_pred = pred!("fail");
 ///
 /// // Make a unify predicate.
@@ -525,16 +525,10 @@ macro_rules! sfunction {
 /// ```
 #[macro_export]
 macro_rules! pred {
-    ($functor:expr) => {  // For predicates without terms.
-        Goal::BuiltInGoal(
-            BuiltInPredicate{ functor: $functor.to_string(),
-                              terms: None }
-        )
+    ($functor:expr) => {  // For predicates without arguments.
+        make_goal_no_args($functor)
     };
     ($functor:expr, $($term:expr),*) => {
-        Goal::BuiltInGoal(
-            BuiltInPredicate{ functor: $functor.to_string(),
-                              terms: Some(vec!($($term),*)) }
-        )
+        make_goal($functor, vec!($($term),*))
     };
 }
