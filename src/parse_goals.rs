@@ -1,5 +1,6 @@
 //! Utilities for parsing goals and queries.
 //!
+// Cleve Lendon 2023
 
 use crate::atom;
 use crate::pred;
@@ -112,7 +113,6 @@ pub fn get_left_and_right(chrs: Vec<char>, index: usize, size: usize)
 
 } // get_left_and_right
 
-
 /// Splits a string representation of a complex term into its functor and terms.
 ///
 /// For example, if the complex term is:
@@ -139,7 +139,6 @@ fn split_complex_term(complex: Vec<char>, index1: usize, index2: usize)
       return (chars_to_string!(functor), chars_to_string!(terms));
 
 } // split_complex_term
-
 
 /// Parses a string to produce a goal.
 ///
@@ -224,64 +223,88 @@ pub fn parse_subgoal(to_parse: &str) -> Result<Goal, String> {
             } // match
         },
         Err(err) => { return Err(err); },
-    }
+    } // match
 
     let (functor_str, args_str) =
                      split_complex_term(chrs, left_index, right_index);
 
     // Check for operators.
     if functor_str == "time" || functor_str == "not"{
-       return make_operator_goal(&functor_str, &args_str);
+       return parse_operator_goal(&functor_str, &args_str);
     }
 
-    return make_goal(&functor_str, &args_str);
+    let args = parse_arguments(&args_str)?;
+    return Ok(make_goal(&functor_str, args));
 
 } // parse_subgoal
 
-
 /// Makes a goal from a functor and a vector of unifiable terms.
 ///
-/// Complex terms and built-in predicates have the form: `functor(term1, term2...)`
-/// If the given functor represents a built-in predicate, such as print() or
-/// append(), this function will construct the predicate and wrap it in
-/// Goal::BuiltInGoal(). Otherwise, the function will construct a complex term,
-/// and wrap it in Goal::ComplexGoal().
+/// Complex terms and built-in predicates have the same form:
+/// `functor(term1, term2,…)`.
+/// If the given functor corresponds a built-in predicate, such as print(…)
+/// or append(…), this function will construct the built-in predicate and
+/// wrap it in Goal::BuiltInGoal(). Otherwise, the function will construct
+/// a complex term, and wrap it in Goal::ComplexGoal().
 ///
 /// # Arguments
-/// * functor (string)
-/// * arguments / terms (string)
+/// * functor (String)
+/// * arguments (vector of Unifiable terms)
 /// # Result
-/// * [Goal](../goal/enum.Goal.html)
-/// # Usage
-/// ```
-/// use suiron::*;
+/// * Goal
 ///
-/// let args = "3.14159, [A, B, C], 6, $Out";
-/// let append_pred = match make_goal("append", args) {
-///     Ok(goal) => { println!("{}", &goal); },
-///     Err(err) => { panic!("{}", err); },
-/// };
-/// // Prints: append(3.14159, [A, B, C], 6, $Out)
-/// ```
-pub fn make_goal(functor: &str, args_str: &str) -> Result<Goal, String> {
+pub fn make_goal(functor: &str, mut args: Vec<Unifiable>) -> Goal {
 
-    let mut args = parse_arguments(args_str)?;
-
+    // Is this a built-in predicate?
+    if functor == "fail" || functor == "nl" || functor == "!" { // Ignore args.
+        let pred = BuiltInPredicate::new(functor.to_string(), None);
+        return Goal::BuiltInGoal(pred);
+    }
     if functor == "print" || functor == "append" || functor == "functor" ||
        functor == "include" || functor == "exclude" ||
        functor == "print_list" || functor == "unify" || functor == "equal" ||
        functor == "less_than"    || functor == "less_than_or_equal" ||
        functor == "greater_than" || functor == "greater_than_or_equal" {
         let pred = BuiltInPredicate::new(functor.to_string(), Some(args));
-        return Ok(Goal::BuiltInGoal(pred));
+        return Goal::BuiltInGoal(pred);
     }
 
     // Create a complex term.
     let mut unifiables = vec![atom!(functor)];
     unifiables.append(&mut args);
-    return Ok(Goal::ComplexGoal(Unifiable::SComplex(unifiables)));
+    return Goal::ComplexGoal(Unifiable::SComplex(unifiables));
 
 } // make_goal()
+
+/// Makes a goal which has no arguments.
+///
+/// Some built-in predicates, such as `nl` and `fail`, contain no arguments.
+/// Similarly, it might be useful to allow complex terms to consist of a
+/// functor only.
+///
+/// If the given functor corresponds a built-in predicate, such as nl or fail,
+/// this function will construct the predicate and wrap it in Goal::BuiltInGoal().
+/// Otherwise, the function will construct a complex term, and wrap it in
+/// Goal::ComplexGoal().
+///
+/// # Arguments
+/// * functor (String)
+/// # Result
+/// * Goal
+///
+pub fn make_goal_no_args(functor: &str) -> Goal {
+
+    // Is this a built-in predicate?
+    if functor == "fail" || functor == "nl" || functor == "!" {
+        let pred = BuiltInPredicate::new(functor.to_string(), None);
+        return Goal::BuiltInGoal(pred);
+    }
+
+    // Otherwise create a complex term.
+    let unifiables = vec![atom!(functor)];
+    return Goal::ComplexGoal(Unifiable::SComplex(unifiables));
+
+} // make_goal_no_args()
 
 /// Makes a operator goal for the given name and argument.
 ///
@@ -289,13 +312,15 @@ pub fn make_goal(functor: &str, args_str: &str) -> Result<Goal, String> {
 /// An operator, on the other hand, holds a vector of goals, so it must be
 /// handled separately.
 ///
+/// This function does not handle And and Or operators.
+///
 /// # Arguments
 /// * name of operator
 /// * argument string
 /// # Return
 /// * operator goal or error message
 ///
-fn make_operator_goal(name: &str, args_str: &str) -> Result<Goal, String> {
+fn parse_operator_goal(name: &str, args_str: &str) -> Result<Goal, String> {
     let subgoal = parse_subgoal(&args_str)?;
     match name {
         "time" => {
@@ -305,11 +330,11 @@ fn make_operator_goal(name: &str, args_str: &str) -> Result<Goal, String> {
             return Ok(Goal::OperatorGoal(Operator::Not(vec![subgoal])));
         },
         _ => {
-           let err = "make_operator_goal() - Invalid operator.".to_string();
+           let err = "parse_operator_goal() - Invalid operator.".to_string();
            return Err(err)
         },
     }
-} // make_operator_goal()
+} // parse_operator_goal()
 
 // Formats an error message for indices_of_parentheses().
 // Arguments:
