@@ -48,6 +48,8 @@ pub struct SolutionNode<'a> {
     pub no_backtracking: bool,
 
     // For Complex Solution Nodes.
+    /// Refers to the solution node of a rule's body. (For Complex goals.)
+    pub child: Option<Rc<RefCell<SolutionNode<'a>>>>,
     /// The index of a fact or rule. (For Complex goals.)
     pub rule_index: usize,
     /// The number of facts and rules for the goal above. (For Complex goals.)
@@ -89,6 +91,7 @@ impl<'a> SolutionNode<'a> {
             parent_node: None,
             ss: empty_ss!(),
             no_backtracking: false,
+            child: None,
             rule_index: 0,
             number_facts_rules: 0,
             head_sn: None,
@@ -254,15 +257,15 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
             let mut sn_ref = sn.borrow_mut();
 
             // Check for a child solution.
-            match &sn_ref.head_sn {
+            match &sn_ref.child {
                 None => {},
-                Some(head_sn) => {
-                    let solution = next_solution(Rc::clone(&head_sn));
+                Some(child_sn) => {
+                    let solution = next_solution(Rc::clone(&child_sn));
                     if solution.is_some() { return solution; }
                 },
             }
 
-            sn_ref.head_sn = None;
+            sn_ref.child = None;
             loop {
 
                 if sn_ref.rule_index >= sn_ref.number_facts_rules { return None; }
@@ -284,11 +287,11 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                     Some(ss) => {
                         let body = rule.get_body();
                         if body == Goal::Nil { return Some(ss); }
-                        let head_sn = make_solution_node(Rc::new(body),
+                        let child_sn = make_solution_node(Rc::new(body),
                                                           sn_ref.kb, ss,
                                                           Rc::clone(&sn));
-                        sn_ref.head_sn = Some(Rc::clone(&head_sn));
-                        let child_solution = next_solution(head_sn);
+                        sn_ref.child = Some(Rc::clone(&child_sn));
+                        let child_solution = next_solution(child_sn);
                         if child_solution.is_some() { return child_solution; }
                     },
                 } // match
@@ -391,39 +394,35 @@ mod test {
     use serial_test::serial;
 
     // Test the set_no_backtracking() function.
-    // Create two solution nodes. The parent of sn2 is sn1.
-    // Setting the no_backtracking flag on sn2 should also
-    // set it on sn1.
+    // Some rules:
+    //    get_value($X) :- $X = 1.
+    //    get_value($X) :- $X = 2.
+    //    test1($X) :- get_value($X), $X == 2.    // one solution
+    //    test2($X) :- get_value($X), !, $X == 2. // no solutions
     #[test]
     #[serial]
     fn test_set_no_backtracking() {
 
-        // Set up a solution node.
-        let kb = KnowledgeBase::new();
-        let query = parse_query("goal1()").unwrap();
-        let sn1 = make_base_node(Rc::new(query), &kb);
-
-        // Set up another solution node. The parent node is sn1.
-        let ss = empty_ss!();
-        let query = parse_query("goal2()").unwrap();
-        let sn2 = make_solution_node(Rc::new(query), &kb, ss, Rc::clone(&sn1));
-
-        assert_eq!(false, sn1.borrow().no_backtracking);
-
-        // Set the no_backtracking flag on the child node.
-        sn2.borrow_mut().set_no_backtracking();
-        assert_eq!(true, sn1.borrow().no_backtracking);
-
-        // A better test.
         start_query();
         let mut kb = KnowledgeBase::new();
         let rule1 = parse_rule("get_value($X) :- $X = 1.").unwrap();
         let rule2 = parse_rule("get_value($X) :- $X = 2.").unwrap();
-        let rule3 = parse_rule("test($X) :- get_value($X), !, $X == 2.").unwrap();
-        add_rules!(&mut kb, rule1, rule2, rule3);
+        let rule3 = parse_rule("test1($X) :- get_value($X), $X == 2.").unwrap();
+        let rule4 = parse_rule("test2($X) :- get_value($X), !, $X == 2.").unwrap();
+        add_rules!(&mut kb, rule1, rule2, rule3, rule4);
 
-        // Make a query
-        let query = parse_query("test($X)").unwrap();
+        // Make a query.
+        let query = parse_query("test1($X)").unwrap();
+        let sn = make_base_node(Rc::new(query), &kb);
+
+        let solution = next_solution(Rc::clone(&sn));
+        match solution {
+            Some(_ss) => {},
+            None => { panic!("There should be 1 solution."); },
+        }
+
+        // Second query.
+        let query = parse_query("test2($X)").unwrap();
         let sn = make_base_node(Rc::new(query), &kb);
 
         let solution = next_solution(Rc::clone(&sn));
