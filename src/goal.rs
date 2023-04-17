@@ -249,13 +249,13 @@ impl Goal {
 /// let query = parse_query("loves($Who, $Whom)").unwrap();
 /// let base_node = make_base_node(Rc::new(query), &kb);
 /// ```
+#[inline]
 pub fn make_base_node<'a>(goal: Rc<Goal>, kb: &'a KnowledgeBase)
                          -> Rc<RefCell<SolutionNode<'a>>> {
 
     // Get predicate key for knowledge base.
-    let key: String;
-    match &*goal {
-        Goal::ComplexGoal(cmplx) => { key = cmplx.key(); },
+    let key = match &*goal {
+        Goal::ComplexGoal(cmplx) => { cmplx.key() },
         _ => { panic!("make_base_node() - Goal must be a ComplexGoal."); },
     };
 
@@ -298,17 +298,19 @@ pub fn make_solution_node<'a>(goal: Rc<Goal>,
 
     // Make a solution node with defaults.
     let mut node = SolutionNode::new(Rc::clone(&goal), kb);
-    node.parent_node = Some(parent_node);
 
     match &*goal {
 
         Goal::OperatorGoal(op) => {
+
+            node.parent_node = Some(parent_node);
 
             match op {
 
                 Operator::Or(_) | Operator::And(_) => {
 
                     node.ss = Rc::clone(&ss);
+
                     let (head, tail) = op.split_head_tail();
                     node.operator_tail = Some(tail);
 
@@ -322,9 +324,10 @@ pub fn make_solution_node<'a>(goal: Rc<Goal>,
                     set_head_node(&rc_node, head_node);
                     return rc_node;
                 },
-                Operator::Time(goals) |
-                Operator::Not(goals) => {
+                Operator::Time(goals) | Operator::Not(goals) => {
+
                     node.ss = Rc::clone(&ss);
+
                     let goal = goals[0].clone();
                     let rc_node = rc_cell!(node);
                     let head_node = make_solution_node(Rc::new(goal), kb,
@@ -339,6 +342,7 @@ pub fn make_solution_node<'a>(goal: Rc<Goal>,
         Goal::ComplexGoal(cmplx) => {
 
             node.ss = ss;
+            node.parent_node = None;
 
             // Count the number of rules or facts which match the goal.
             node.number_facts_rules = count_rules(kb, &cmplx.key());
@@ -348,6 +352,7 @@ pub fn make_solution_node<'a>(goal: Rc<Goal>,
         Goal::BuiltInGoal(_) => {
 
             node.ss = ss;
+            node.parent_node = Some(parent_node);
             return rc_cell!(node);
 
         },
