@@ -264,7 +264,8 @@ pub fn make_goal(functor: &str, mut args: Vec<Unifiable>) -> Goal {
        functor == "include" || functor == "exclude" ||
        functor == "print_list" || functor == "unify" || functor == "equal" ||
        functor == "less_than"    || functor == "less_than_or_equal" ||
-       functor == "greater_than" || functor == "greater_than_or_equal" {
+       functor == "greater_than" || functor == "greater_than_or_equal" ||
+       functor == "count" {
         let pred = BuiltInPredicate::new(functor.to_string(), Some(args));
         return Goal::BuiltInGoal(pred);
     }
