@@ -13,6 +13,7 @@ use super::logic_var::*;
 use super::unifiable::*;
 use super::solution_node::*;
 use super::built_in_print::*;
+use super::built_in_count::*;
 use super::built_in_append::*;
 use super::built_in_comparison::*;
 use super::built_in_print_list::*;
@@ -159,6 +160,9 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
         "!" => { // !
             sn_ref.set_no_backtracking();
             return Some(Rc::clone(&sn_ref.ss));
+        },
+        "count" => { // count terms in list
+            return bip_count(bip, &sn_ref.ss);
         },
         "fail" => { return None; }, // always fails
         _ => { panic!("next_solution_bip() - Not implemented yet: {}",
