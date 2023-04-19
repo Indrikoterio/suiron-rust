@@ -10,8 +10,8 @@
 //! accepts a solution node as its argument, and initiates the search
 //! for a solution. When a solution is found, the search stops.
 //!
-//! Each solution node preserves its state. Calling next_solution() again
-//! will continue the search for alternative solutions.
+//! Each solution node preserves its state. Calling next_solution()
+//! again will continue the search for alternative solutions.
 //!
 // Cleve Lendon 2023
 
