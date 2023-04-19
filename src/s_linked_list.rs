@@ -29,9 +29,13 @@
 //!
 // Cleve Lendon 2023
 
+use std::rc::Rc;
+
 use super::unifiable::{*, Unifiable::*};
 use super::logic_var::*;
 use super::parse_terms::*;
+use super::substitution_set::*;
+
 use crate::cons_node;
 use crate::str_to_chars;
 use crate::chars_to_string;
@@ -134,11 +138,11 @@ pub fn make_linked_list<'a>(vbar: bool, mut terms: Vec<Unifiable>) -> Unifiable 
 /// one argument: Hello, world!.
 ///
 /// # Arguments
-/// * `vec_chars` - vector of characters
-/// * `index` - index of character
-/// * `ch` - character to compare
+/// * vector of characters
+/// * index of character
+/// * character to compare
 /// # Return
-/// `bool` - True if characters are the same. False otherwise
+/// boolean - True if characters are the same. False otherwise
 ///
 /// # Usage
 /// <blockquote>
@@ -174,7 +178,8 @@ pub fn equal_escape(vec_chars: &Vec<char>, index: usize, ch: char) -> bool {
 /// # Arguments
 /// * `to_parse` - string to parse
 /// # Return
-/// * `Result` - Ok([list](../unifiable/enum.Unifiable.html#variant.SLinkedList)) or Err(message)
+/// * `Result` - Ok([list](../unifiable/enum.Unifiable.html#variant.SLinkedList))
+/// or Err(message)
 /// # Usage
 /// <blockquote>
 /// let list = parse_linked_list("[a, b, c | $X]");
@@ -406,7 +411,8 @@ mod test {
         let list1 = make_linked_list(true, terms);
         if let SLinkedList{term: _, next: _, count: c, tail_var: _ } = list1 {
             assert_eq!(c, 4, "Test 3 - Count should be 4.");
-            assert_eq!(list1.to_string(), "[1, 2, 3 | $T]", "Test 3 - Unexpected list.");
+            assert_eq!(list1.to_string(), "[1, 2, 3 | $T]",
+                                          "Test 3 - Unexpected list.");
         }
         else { panic!("Test 3 - Did not produce list."); }
     }
@@ -474,6 +480,89 @@ mod test {
 
     } // test_parse_linked_list()
 }
+
+/// Counts the number of terms in a linked list.
+///
+/// The last term may be a tail variable, so this method requires the
+/// substitution set.
+///
+/// Consider:
+/// <pre>
+/// $X = [a, b, c, d], $Y = [$H | $T], $Y = $X.
+/// </pre>
+///
+/// After the above code runs, what is the number of terms in the list assigned
+/// to $Y? There are two terms, $H and $T, so two may be a valid answer. But
+/// $T is a tail variable, which unifies with the list [b, c, d]. In some
+/// contexts, it's more useful to count four.
+///
+/// This function will count terms of a linked list, including the terms which
+/// the tail variable is bound to.
+///
+/// # Arguments
+/// * [Unifiable](../unifiable/enum.Unifiable.html)
+///   This Unifiable should be SLinkedList or a LogicVar linked to SLinkedList.
+/// * [SubstitutionSet](../substitution_set/index.html)
+/// # Return
+/// * number of terms
+pub fn count_terms(uni: &Unifiable, ss: &Rc<SubstitutionSet>) -> i64 {
+
+    let mut count: i64 = 0;
+
+    // If the first argument is a logic variable, get the ground term.
+    let mut uni = uni;
+    if let LogicVar{id: _, name: _} = uni {
+        match get_ground_term(&uni, &ss) {
+            Some(uni2) => { uni = uni2; },
+            None => { return 1; },
+        }
+    }
+
+    if let SLinkedList{term: t, next: n, count: _, tail_var: _} = uni {
+
+        let mut head: &Unifiable = &*t;
+        let mut slist: &Unifiable = &*n;
+
+        while *head != Unifiable::Nil {
+            count += 1;
+            match get_list_data(slist) {
+                Some((t, n, tv)) => {
+                    head = t;
+                    slist = n;
+                    if tv && *head != Unifiable::Anonymous {
+                        let list = get_list(&head, &ss);
+                        match list {
+                            Some(list) => {
+                                if let SLinkedList{term, next,
+                                        count: _, tail_var: _} = list {
+                                    head = term;
+                                    slist = next;
+                                }
+                            },
+                            None => { return count; },
+                        }
+                    }
+                }
+                None => { return count; },
+            } 
+        } // while
+
+        return count;
+    }
+    else { return 1; }
+
+} // count_terms()
+
+
+fn get_list_data(list: &Unifiable) -> Option<(&Unifiable, &Unifiable, bool)> {
+
+    if let SLinkedList{term: t, next: n, count: _, tail_var: tv} = list {
+        return Some((&*t, &*n, *tv));
+    }
+    return None;
+
+} // get_list_data()
+
 
 /*
     Scan the list from head to tail,
