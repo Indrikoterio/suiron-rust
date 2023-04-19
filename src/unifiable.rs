@@ -77,9 +77,9 @@ impl Unifiable {
     /// predicate is `loves/2`.
     ///
     /// # Arguments
-    /// * `self` - [SComplex](../unifiable/enum.Unifiable.html#variant.SComplex)
+    /// * self - [SComplex](../unifiable/enum.Unifiable.html#variant.SComplex)
     /// # Return
-    /// * `key` - String
+    /// * key
     /// # Panics
     /// * If self is not a
     /// [complex](../unifiable/enum.Unifiable.html#variant.SComplex) term.
@@ -125,13 +125,12 @@ impl Unifiable {
     /// binding ($X to verb), and return the new substitution set.
     ///
     /// # Arguments
-    /// * `self`  - a unifiable term
-    /// * `other` - the other unifiable term
-    /// * `ss`    - [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
+    /// * self - a unifiable term
+    /// * other unifiable term
+    /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
     /// # Returns
-    /// * `Option` -
-    /// Some([SubstitutionSet](../substitution_set/type.SubstitutionSet.html))
-    /// or None.
+    /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
+    /// or None
     /// # Usage
     /// ```
     /// use std::rc::Rc;
@@ -372,7 +371,6 @@ impl Unifiable {
 
     }  // unify()
 
-
     /// Recreates logic variables to give them unique IDs.
     ///
     /// The scope of a logic variable is the rule in which it is defined.
@@ -395,10 +393,10 @@ impl Unifiable {
     /// occurrence of $X is given the same ID.
     ///
     /// # Arguments
-    /// * `self`
-    /// * `recreated_vars` - set of previously recreated variable IDs
+    /// * self
+    /// * previously recreated variable IDs
     /// # Return
-    /// * `new term`
+    /// * new term
     /// # Usage
     /// ```
     /// use suiron::*;
@@ -465,10 +463,10 @@ impl Unifiable {
     /// to display solutions.
     ///
     /// # Arguments
-    /// * `self`
-    /// * `ss` - [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
+    /// * self
+    /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
     /// # Return
-    /// * `new term`
+    /// * new term
     /// # Usage
     /// ```
     /// use std::rc::Rc;
