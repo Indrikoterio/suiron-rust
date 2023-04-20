@@ -15,6 +15,7 @@ use super::solution_node::*;
 use super::built_in_print::*;
 use super::built_in_count::*;
 use super::built_in_append::*;
+use super::built_in_filter::*;
 use super::built_in_comparison::*;
 use super::built_in_print_list::*;
 use super::substitution_set::*;
@@ -94,7 +95,7 @@ impl BuiltInPredicate {
 ///
 /// # Arguments
 /// * reference to [SolutionNode](../solution_node/struct.SolutionNode.html)
-/// * [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
+/// * [BuiltInPredicate](../built_in_predicates/struct.BuiltInPredicate.html)
 /// # Return
 /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
 pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
@@ -119,11 +120,11 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
         "functor" => {
             panic!("Implement this: functor()");
         },
-        "include" => {
-            panic!("Implement this: include()");
+        "include" => { // filters a list
+            return bip_include(bip, &sn_ref.ss);
         },
         "exclude" => {
-            panic!("Implement this: exclude()");
+            return bip_exclude(bip, &sn_ref.ss);
         },
         "print_list" => {
             next_solution_print_list(bip, &sn_ref.ss);
