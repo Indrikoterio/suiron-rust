@@ -17,7 +17,7 @@ static FORMAT_SPECIFIER: &str = "%s";
 /// formats them for output, and prints out the result.
 ///
 /// # Arguments
-/// * [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
+/// * [BuiltInPredicate](../built_in_predicates/struct.BuiltInPredicate.html)
 /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
 /// # Usage
 /// ```
