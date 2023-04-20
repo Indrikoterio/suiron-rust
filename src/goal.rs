@@ -1,7 +1,7 @@
 //! A logic expression to be solved (proven true or false).
 //!
 //! [Operators](../operator/enum.Operator.html) (And, Or, etc.),
-//! [built-in predicates](../built_in_predicates/enum.BuiltInPredicate.html)
+//! [built-in predicates](../built_in_predicates/struct.BuiltInPredicate.html)
 //! (Print, Append, etc.) and
 //! [complex](../unifiable/enum.Unifiable.html#variant.SComplex)
 //! terms are goals.<br>
