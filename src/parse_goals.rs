@@ -260,12 +260,13 @@ pub fn make_goal(functor: &str, mut args: Vec<Unifiable>) -> Goal {
         let pred = BuiltInPredicate::new(functor.to_string(), None);
         return Goal::BuiltInGoal(pred);
     }
+
     if functor == "print" || functor == "append" || functor == "functor" ||
        functor == "include" || functor == "exclude" ||
        functor == "print_list" || functor == "unify" || functor == "equal" ||
        functor == "less_than"    || functor == "less_than_or_equal" ||
        functor == "greater_than" || functor == "greater_than_or_equal" ||
-       functor == "count" {
+       functor == "count" || functor == "include" || functor == "exclude" {
         let pred = BuiltInPredicate::new(functor.to_string(), Some(args));
         return Goal::BuiltInGoal(pred);
     }
