@@ -20,8 +20,8 @@ use super::unifiable::Unifiable;
 /// [unify_sfunction()](../built_in_functions/fn.unify_sfunction.html#).
 ///
 /// # Arguments
-/// * `arguments` - list of [Unifiable](../unifiable/enum.Unifiable.html) terms
-/// * `ss` - [SubstitutionSet](../substitution_set/index.html)
+/// * list of [Unifiable](../unifiable/enum.Unifiable.html) terms
+/// * [SubstitutionSet](../substitution_set/index.html)
 /// # Returns
 /// * [SInteger](../unifiable/enum.Unifiable.html#variant.SInteger) or
 ///   [SFloat](../unifiable/enum.Unifiable.html#variant.SFloat)
@@ -66,8 +66,8 @@ pub fn evaluate_add<'a>(arguments: &'a Vec<Unifiable>,
 /// [unify_sfunction()](../built_in_functions/fn.unify_sfunction.html#).
 ///
 /// # Arguments
-/// * `arguments` - list of [Unifiable](../unifiable/enum.Unifiable.html) terms
-/// * `ss` - [SubstitutionSet](../substitution_set/index.html)
+/// * list of [Unifiable](../unifiable/enum.Unifiable.html) terms
+/// * [SubstitutionSet](../substitution_set/index.html)
 /// # Returns
 /// * [SInteger](../unifiable/enum.Unifiable.html#variant.SInteger) or
 ///   [SFloat](../unifiable/enum.Unifiable.html#variant.SFloat)
@@ -114,8 +114,8 @@ pub fn evaluate_subtract<'a>(arguments: &'a Vec<Unifiable>,
 /// [unify_sfunction()](../built_in_functions/fn.unify_sfunction.html#).
 ///
 /// # Arguments
-/// * `arguments` - list of [Unifiable](../unifiable/enum.Unifiable.html) terms
-/// * `ss` - [SubstitutionSet](../substitution_set/index.html)
+/// * list of [Unifiable](../unifiable/enum.Unifiable.html) terms
+/// * [SubstitutionSet](../substitution_set/index.html)
 /// # Returns
 /// * [SInteger](../unifiable/enum.Unifiable.html#variant.SInteger) or
 ///   [SFloat](../unifiable/enum.Unifiable.html#variant.SFloat)
@@ -167,8 +167,8 @@ pub fn evaluate_multiply<'a>(arguments: &'a Vec<Unifiable>,
 /// [unify_sfunction()](../built_in_functions/fn.unify_sfunction.html#).
 ///
 /// # Arguments
-/// * `arguments` - list of [Unifiable](../unifiable/enum.Unifiable.html) terms
-/// * `ss` - [SubstitutionSet](../substitution_set/index.html)
+/// * list of [Unifiable](../unifiable/enum.Unifiable.html) terms
+/// * [SubstitutionSet](../substitution_set/index.html)
 /// # Returns
 /// * [SInteger](../unifiable/enum.Unifiable.html#variant.SInteger) or
 ///   [SFloat](../unifiable/enum.Unifiable.html#variant.SFloat)
@@ -228,8 +228,8 @@ pub enum SNumber {
 /// the numbers is a floating point number.
 ///
 /// # Arguments
-/// * `terms` - vector of Unifiable terms
-/// * `ss` - SubstitutionSet
+/// * vector of Unifiable terms
+/// * SubstitutionSet
 /// # Return
 /// * (vector of SNumbers, has_float)
 /// # Panics
@@ -267,9 +267,9 @@ fn get_numbers<'a>(terms: &Vec<Unifiable>, ss: &'a Rc<SubstitutionSet<'a>>)
 /// Gets the integers (i64) from a list of numbers.
 ///
 /// # Argument
-/// * `numbers` - SNumber
+/// * vector of numbers - (SNumber)
 /// # Return
-/// * `vector of i64`
+/// * vector of i64
 fn get_integers<'a>(numbers: &Vec<SNumber>) -> Vec<i64> {
     let mut ints: Vec<i64> = vec![];
     for n in numbers {
@@ -281,9 +281,9 @@ fn get_integers<'a>(numbers: &Vec<SNumber>) -> Vec<i64> {
 /// Gets the floating point numbers (f64) from a list of numbers.
 ///
 /// # Argument
-/// * `numbers` - SNumber
+/// * vector of numbers - (SNumber)
 /// # Return
-/// * `vector of f64`
+/// * vector of f64
 fn get_floats<'a>(numbers: &Vec<SNumber>) -> Vec<f64> {
     let mut floats: Vec<f64> = vec![];
     for n in numbers {
