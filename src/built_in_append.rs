@@ -21,7 +21,7 @@ use super::built_in_predicates::*;
 /// in built_in_predicates.rs.
 ///
 /// # Arguments
-/// * [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
+/// * [BuiltInPredicate](../built_in_predicates/struct.BuiltInPredicate.html)
 /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
 /// # Return
 /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
