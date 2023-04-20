@@ -13,16 +13,21 @@ use super::built_in_predicates::*;
 
 /// Counts the terms in a Suiron list.
 ///
-/// This predicate requires two arguments. The first argument is
-/// the list to be counted. The second is the output variable, which
-/// unifies with the count.
+/// In Suiron source code, the count() predicate requires two arguments.
+/// <pre>
+///     count($MyList, $Count)
+/// </pre>
+///
+/// The first argument is the list to be counted. (Or a logic variable
+/// which is bound to a list.) The second is an output variable, which
+/// unifies with the calculated count.
 ///
 /// This function is called by
 /// [next_solution_bip()](../built_in_predicates/fn.next_solution_bip.html)
 /// in built_in_predicates.rs.
 ///
 /// # Arguments
-/// * [BuiltInPredicate](../built_in_predicates/enum.BuiltInPredicate.html)
+/// * [BuiltInPredicate](../built_in_predicates/struct.BuiltInPredicate.html)
 /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html)
 /// # Return
 /// * [SubstitutionSet](../substitution_set/type.SubstitutionSet.html) or None
