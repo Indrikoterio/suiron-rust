@@ -10,14 +10,15 @@
 //! [$H | $T]<br>
 //! </blockquote>
 //!
-//! Suiron lists are implemented as singly linked lists. Each element (or node)
-//! contains a value (a [Unifiable](../unifiable/enum.Unifiable.html) term)
-//! and a link to the next element. The last element of the list links to Nil.
+//! Suiron lists are implemented as singly linked lists. Each element
+//! (or node) contains a value (a [Unifiable](../unifiable/enum.Unifiable.html)
+//! term) and a link to the next element. The last element of the list links
+//! to Nil.
 //!
 //! A vertical bar (or pipe) |, is used to divide the list between head terms
 //! and the tail, which is everything left over. When two lists are unified,
-//! a tail variable binds to all the left-over terms in the other list. For example,
-//! in the following code,
+//! a tail variable binds to all the left-over terms in the other list. For
+//! example, in the following code,
 //!
 //! <blockquote>
 //!    [a, b, c, d, e] = [$X, $Y | $Z]
@@ -176,10 +177,10 @@ pub fn equal_escape(vec_chars: &Vec<char>, index: usize, ch: char) -> bool {
 ///
 /// Returns an error if the string is invalid.
 /// # Arguments
-/// * `to_parse` - string to parse
+/// * string to parse
 /// # Return
-/// * `Result` - Ok([list](../unifiable/enum.Unifiable.html#variant.SLinkedList))
-/// or Err(message)
+/// * [list](../unifiable/enum.Unifiable.html#variant.SLinkedList))
+/// or error message
 /// # Usage
 /// <blockquote>
 /// let list = parse_linked_list("[a, b, c | $X]");
@@ -343,6 +344,179 @@ fn link_front(new_term: Unifiable, tail: bool, list: Unifiable) -> Unifiable {
 
 } // link_front()
 
+/// Counts the number of terms in a linked list.
+///
+/// The last term may be a tail variable, so this method requires the
+/// substitution set.
+///
+/// Consider:
+/// <pre>
+/// $X = [a, b, c, d], $Y = [$H | $T], $Y = $X.
+/// </pre>
+///
+/// After the above code runs, what is the number of terms in the list
+/// assigned to $Y? There are two terms, $H and $T, so two may be a valid
+/// answer. But $T is a tail variable, which unifies with the list [b, c, d].
+/// In some contexts, it's more useful to count four.
+///
+/// This function will count terms of a linked list, including the terms
+/// which the tail variable is bound to.
+///
+/// # Arguments
+/// * [Unifiable](../unifiable/enum.Unifiable.html)
+///   The Unifiable should be SLinkedList or a LogicVar linked to SLinkedList.
+/// * [SubstitutionSet](../substitution_set/index.html)
+/// # Return
+/// * number of terms
+pub fn count_terms(uni: &Unifiable, ss: &Rc<SubstitutionSet>) -> i64 {
+
+    let mut count: i64 = 0;
+
+    // If the first argument is a logic variable, get the ground term.
+    let mut uni = uni;
+    if let LogicVar{id: _, name: _} = uni {
+        match get_ground_term(&uni, &ss) {
+            Some(uni2) => { uni = uni2; },
+            None => { return 1; },
+        }
+    }
+
+    if let SLinkedList{term: t, next: n, count: _, tail_var: _} = uni {
+
+        let mut head: &Unifiable = &*t;
+        let mut slist: &Unifiable = &*n;
+
+        while *head != Unifiable::Nil {
+            count += 1;
+            match get_list_data(slist) {
+                Some((t, n, tv)) => {
+                    head = t;
+                    slist = n;
+                    if tv && *head != Unifiable::Anonymous {
+                        let list = get_list(&head, &ss);
+                        match list {
+                            Some(list) => {
+                                if let SLinkedList{term, next,
+                                        count: _, tail_var: _} = list {
+                                    head = term;
+                                    slist = next;
+                                }
+                            },
+                            None => { return count; },
+                        }
+                    }
+                }
+                None => { return count; },
+            } // match
+        } // while
+
+        return count;
+    }
+    else { return 1; }
+
+} // count_terms()
+
+/// Filters a Suiron list, to include or exclude terms which match a pattern.
+///
+/// # Arguments
+/// * filter term - to match against
+/// * term to filter - should be SLinkedList or a LogicVar bound to SLinkedList.
+/// * [SubstitutionSet](../substitution_set/index.html)
+/// * include flag - true = include, false = exclude
+/// # Return
+/// * new list
+///
+pub fn filter(filter: &Unifiable,
+              uni: &Unifiable, ss: &Rc<SubstitutionSet>,
+              include: bool) -> Option<Unifiable> {
+
+    // If the first argument is a logic variable, get the ground term.
+    let uni = get_ground_term(uni, ss)?;
+
+    // If the unifiable is a linked list, filter it.
+    if let SLinkedList{term: t, next: n, count: _, tail_var: _} = uni {
+
+        let mut filtered_terms: Vec<Unifiable> = vec![];
+
+        let mut head: &Unifiable = &*t;
+        let mut slist: &Unifiable = &*n;
+
+        while *head != Unifiable::Nil {
+
+            if include {  // Include terms which match.
+                if pass_filter(filter, head, ss) {
+                    filtered_terms.push(head.clone());
+                }
+            }
+            else {   // Must be exclude filter.
+                // Opposite of above.
+                if pass_filter(filter, head, ss) == false {
+                    filtered_terms.push(head.clone());
+                }
+            }
+
+            match get_list_data(slist) {
+                Some((t, n, tv)) => {
+                    head = t;
+                    slist = n;
+                    if tv && *head != Unifiable::Anonymous {
+                        let list = get_list(&head, &ss);
+                        match list {
+                            Some(list) => {
+                                if let SLinkedList{term, next,
+                                       count: _, tail_var: _} = list {
+                                    head = term;
+                                    slist = next;
+                                }
+                            },
+                            None => {},
+                        } // match
+                    }
+                }
+                None => { break; },
+            } // match
+        } // while
+
+        let new_list = make_linked_list(false, filtered_terms);
+        return Some(new_list);
+    }
+    return None;
+
+} // filter
+
+// Determines whether a term should pass the filter or be discarded.
+//
+// The function tests to see if the given term can be unified with
+// the given filter term. If it can, the function returns true.
+// False otherwise.
+//
+// # Arguments
+// * filter term
+// * term to test
+// * substitution set
+// # Return
+// * bool - true if term can pass filter
+fn pass_filter(filter: &Unifiable, term: &Unifiable, 
+               ss: &Rc<SubstitutionSet>) -> bool {
+    match filter.unify(term, ss) {
+        Some(_) => { true },
+        None => { false },
+    }
+}
+
+// Gets the term, next link, and tail-variable flag from a list.
+// # Arguments
+// * list term
+// # Return
+// * (term, next, tail-var flag) or None
+fn get_list_data(list: &Unifiable) -> Option<(&Unifiable, &Unifiable, bool)> {
+
+    if let SLinkedList{term: t, next: n, count: _, tail_var: tv} = list {
+        return Some((&*t, &*n, *tv));
+    }
+    return None;
+
+} // get_list_data()
 
 // Creates an error message for parse_linked_list() function.
 // Arguments:
@@ -480,88 +654,6 @@ mod test {
 
     } // test_parse_linked_list()
 }
-
-/// Counts the number of terms in a linked list.
-///
-/// The last term may be a tail variable, so this method requires the
-/// substitution set.
-///
-/// Consider:
-/// <pre>
-/// $X = [a, b, c, d], $Y = [$H | $T], $Y = $X.
-/// </pre>
-///
-/// After the above code runs, what is the number of terms in the list assigned
-/// to $Y? There are two terms, $H and $T, so two may be a valid answer. But
-/// $T is a tail variable, which unifies with the list [b, c, d]. In some
-/// contexts, it's more useful to count four.
-///
-/// This function will count terms of a linked list, including the terms which
-/// the tail variable is bound to.
-///
-/// # Arguments
-/// * [Unifiable](../unifiable/enum.Unifiable.html)
-///   This Unifiable should be SLinkedList or a LogicVar linked to SLinkedList.
-/// * [SubstitutionSet](../substitution_set/index.html)
-/// # Return
-/// * number of terms
-pub fn count_terms(uni: &Unifiable, ss: &Rc<SubstitutionSet>) -> i64 {
-
-    let mut count: i64 = 0;
-
-    // If the first argument is a logic variable, get the ground term.
-    let mut uni = uni;
-    if let LogicVar{id: _, name: _} = uni {
-        match get_ground_term(&uni, &ss) {
-            Some(uni2) => { uni = uni2; },
-            None => { return 1; },
-        }
-    }
-
-    if let SLinkedList{term: t, next: n, count: _, tail_var: _} = uni {
-
-        let mut head: &Unifiable = &*t;
-        let mut slist: &Unifiable = &*n;
-
-        while *head != Unifiable::Nil {
-            count += 1;
-            match get_list_data(slist) {
-                Some((t, n, tv)) => {
-                    head = t;
-                    slist = n;
-                    if tv && *head != Unifiable::Anonymous {
-                        let list = get_list(&head, &ss);
-                        match list {
-                            Some(list) => {
-                                if let SLinkedList{term, next,
-                                        count: _, tail_var: _} = list {
-                                    head = term;
-                                    slist = next;
-                                }
-                            },
-                            None => { return count; },
-                        }
-                    }
-                }
-                None => { return count; },
-            } 
-        } // while
-
-        return count;
-    }
-    else { return 1; }
-
-} // count_terms()
-
-
-fn get_list_data(list: &Unifiable) -> Option<(&Unifiable, &Unifiable, bool)> {
-
-    if let SLinkedList{term: t, next: n, count: _, tail_var: tv} = list {
-        return Some((&*t, &*n, *tv));
-    }
-    return None;
-
-} // get_list_data()
 
 
 /*
