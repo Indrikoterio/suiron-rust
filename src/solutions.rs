@@ -245,6 +245,7 @@ mod test {
     #[serial]
     fn test_solve() {
 
+        clear_id();
         let kb = test_kb();
         let query = parse_query("loves(Leonard, $Whom)").unwrap();
         let sn = make_base_node(Rc::new(query), &kb); // solution node
@@ -267,7 +268,7 @@ mod test {
         assert_eq!("$Who = Leonard, $Whom = Penny", results[0]);
         assert_eq!("$Who = Penny, $Whom = Leonard", results[1]);
 
-    } // test_solve()
+    } // test_solve_all()
 
     // NOTE: The default stack for Rust is 2 MB.
     // The following test contains an endless loop, which will
