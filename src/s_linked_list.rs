@@ -172,7 +172,6 @@ pub fn equal_escape(vec_chars: &Vec<char>, index: usize, ch: char) -> bool {
     false
 } // equal_escape()
 
-
 /// Parses a string to create a linked list.
 ///
 /// Returns an error if the string is invalid.
@@ -185,6 +184,7 @@ pub fn equal_escape(vec_chars: &Vec<char>, index: usize, ch: char) -> bool {
 /// <blockquote>
 /// let list = parse_linked_list("[a, b, c | $X]");
 /// </blockquote>
+///
 pub fn parse_linked_list(to_parse: &str) -> Result<Unifiable, String> {
 
     let s = to_parse.trim();
@@ -503,6 +503,63 @@ fn pass_filter(filter: &Unifiable, term: &Unifiable,
         None => { false },
     }
 }
+
+/// Gets the terms from a Suiron list.
+///
+/// # Arguments
+/// * unifiable term - SLinkedList or a LogicVar bound to SLinkedList.
+/// * [SubstitutionSet](../substitution_set/index.html)
+/// # Return
+/// * vector of terms
+///
+pub fn get_terms(term: &Unifiable, ss: &Rc<SubstitutionSet>) -> Vec<Unifiable> {
+
+    // If the first argument is a logic variable, get the ground term.
+    let term = match get_ground_term(term, ss) {
+        Some(term) => { term },
+        // If there is no ground term, return the term as is.
+        None => { return vec![term.clone()]; },
+    };
+
+    // If the unifiable term is a linked list, collect the terms.
+    if let SLinkedList{term: t, next: n, count: _, tail_var: _} = term {
+
+        let mut collected_terms: Vec<Unifiable> = vec![];
+
+        let mut head:  &Unifiable = &*t;
+        let mut slist: &Unifiable = &*n;
+
+        while *head != Unifiable::Nil {
+
+            collected_terms.push(head.clone());
+
+            match get_list_data(slist) {
+                Some((t, n, tv)) => {
+                    head = t;
+                    slist = n;
+                    if tv && *head != Unifiable::Anonymous {
+                        let list = get_list(&head, &ss);
+                        match list {
+                            Some(list) => {
+                                if let SLinkedList{term, next,
+                                    count: _, tail_var: _} = list {
+                                    head = term;
+                                    slist = next;
+                                }
+                            },
+                            None => {},
+                        } // match
+                    }
+                }
+                None => { break; },
+            } // match
+        } // while
+
+        return collected_terms;
+    }
+    return vec![term.clone()];
+} // get_terms
+
 
 // Gets the term, next link, and tail-variable flag from a list.
 // # Arguments
