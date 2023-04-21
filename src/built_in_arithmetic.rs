@@ -5,6 +5,8 @@
 //! They are called from
 //! [unify_sfunction()](../built_in_functions/fn.unify_sfunction.html#)
 //! in built_in_functions.rs.
+//
+// Cleve Lendon 2023
 
 use std::rc::Rc;
 use super::substitution_set::*;
