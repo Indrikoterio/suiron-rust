@@ -15,9 +15,9 @@ use super::parse_stack::*;
 /// Determines whether the given character is a letter,
 /// number or hyphen.
 /// # Arguments
-/// * `ch` - character
+/// * a character
 /// # Return
-/// * `true or false`
+/// * boolean, true or false
 fn letter_number_hyphen(ch: char) -> bool {
     if ch >= 'a' && ch <= 'z' { return true; }
     if ch >= 'A' && ch <= 'Z' { return true; }
@@ -45,10 +45,9 @@ fn invalid_between_terms(ch: char) -> bool {
 /// Generates a goal from a text string.
 ///
 /// # Arguments
-/// * `to_parse` - string slice
+/// * string to parse
 /// # Return
-/// * `Result` -
-/// Ok([Goal](../goal/index.html)) or Err(message)
+/// * [Goal](../goal/index.html)) or error message
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -84,9 +83,9 @@ pub fn generate_goal(to_parse: &str) -> Result<Goal, String> {
 /// (father($X, $Y); mother($X, $Y))
 ///
 /// # Arguments
-/// * `to_parse` - string to parse
+/// * string to parse
 /// # Return
-/// * `Result` - Ok(tokens) or Err(message)
+/// * vector of tokens or error message
 fn tokenize(to_parse: &str) -> Result<Vec<Token>, String> {
 
     let mut tokens: Vec<Token> = vec![];
@@ -112,18 +111,20 @@ fn tokenize(to_parse: &str) -> Result<Vec<Token>, String> {
         let mut top = peek(&mut parse_stk);
 
         let mut ch = chrs[i];
-        if ch == '"' { // Ignore characters between quotes.
+        if no_esc(ch, '"', previous) { // Ignore chars between quotes.
             let mut j = i + 1;
+            let mut prev = '#';
             while j < length {
                 ch = chrs[j];
-                if ch == '"' {
+                if no_esc(ch, '"', prev) {
                     i = j;
                     break;
                 }
                 j += 1;
+                prev = ch;
             }
         }
-        else if ch == '(' {
+        else if no_esc(ch, '(', previous) {
             // Is the previous character valid in a functor?
             if letter_number_hyphen(previous) {
                 parse_stk.push(TokenType::Complex);
@@ -133,7 +134,7 @@ fn tokenize(to_parse: &str) -> Result<Vec<Token>, String> {
                 start_index = i + 1;
             }
         }
-        else if ch == ')' {
+        else if no_esc(ch, ')', previous) {
             if top == TokenType::Empty {
                 let msg = format!("tokenize() - Unmatched parenthesis: {}", s);
                 return Err(msg);
@@ -147,9 +148,9 @@ fn tokenize(to_parse: &str) -> Result<Vec<Token>, String> {
                 let msg = format!("tokenize() - Unmatched parenthesis: {}", s);
                 return Err(msg);
             }
-        } else if ch == '[' {
+        } else if no_esc(ch, '[', previous) {
             parse_stk.push(TokenType::LinkedList);
-        } else if ch == ']' {
+        } else if no_esc(ch, ']', previous) {
             if top == TokenType::Empty {
                 let msg = format!("tokenize() - Unmatched bracket: {}", s);
                 return Err(msg);
@@ -167,12 +168,12 @@ fn tokenize(to_parse: &str) -> Result<Vec<Token>, String> {
                     let msg = format!("tokenize() - Invalid character: {}", s);
                     return Err(msg);
                 }
-                if ch == ',' {   // And
+                if no_esc(ch, ',', previous) {   // And
                     let subgoal = chars_to_string!(chrs[start_index..i]);
                     tokens.push(make_leaf_token(&subgoal));
                     tokens.push(make_leaf_token(","));
                     start_index = i + 1;
-                } else if ch == ';' {   // Or
+                } else if no_esc(ch, ';', previous) {   // Or
                     let subgoal = chars_to_string!(chrs[start_index..i]);
                     tokens.push(make_leaf_token(&subgoal));
                     tokens.push(make_leaf_token(";"));
@@ -183,6 +184,7 @@ fn tokenize(to_parse: &str) -> Result<Vec<Token>, String> {
 
         previous = ch;
         i += 1;
+
     } // while
 
     if parse_stk.len() > 0 {
@@ -199,6 +201,21 @@ fn tokenize(to_parse: &str) -> Result<Vec<Token>, String> {
 
 } // tokenize()
 
+
+// Ensures that the character being checked matches the match
+// character, and is not escaped by a backslash. (Eg. \, \[ )
+//
+// # Arguments
+// * character to check
+// * match character
+// * previous character
+// # Return
+// * true if not escaped by backslash
+fn no_esc(check: char, match_char: char, previous: char) -> bool {
+    if previous == '\\' { return false; }
+    if check != match_char { return false; }
+    true
+}
 
 /// group_tokens()
 ///
