@@ -7,6 +7,7 @@ use super::parse_terms::*;
 use super::parse_goals::*;
 use super::substitution_set::*;
 use super::unifiable::Unifiable;
+use super::built_in_join::*;
 use super::built_in_arithmetic::*;
 
 use crate::str_to_chars;
@@ -54,7 +55,11 @@ pub fn unify_sfunction<'a>(name: &str, terms: &'a Vec<Unifiable>,
 
     let name = name.to_string();
 
-    if name.eq("add") {
+    if name.eq("join") {
+        let result = evaluate_join(terms, ss);
+        return result.unify(other, ss);
+    }
+    else if name.eq("add") {
         let result = evaluate_add(terms, ss);
         return result.unify(other, ss);
     }
