@@ -358,13 +358,13 @@ pub fn check_quotes(to_check: &str, count: usize) -> Option<String> {
 /// ```
 pub fn parse_term(to_parse: &str) -> Result<Unifiable, String> {
 
-    let s = to_parse.trim();
+    let mut s = to_parse.trim();
 
     let mut has_digit     = false;
     let mut has_non_digit = false;
     let mut has_period    = false;
 
-    let chrs = str_to_chars!(s);
+    let chrs = str_to_chars!(&s);
 
     // First, let's check for an arithmetic function with an infix,
     // such as $X + 100 or $X / 100.
@@ -388,18 +388,19 @@ pub fn parse_term(to_parse: &str) -> Result<Unifiable, String> {
         return Ok(sfunc);
     }
 
-    for ch in chrs {
-        // QUESTION: Should this function test for backslash?
-        if ch != '\\' {
-            if ch >= '0' && ch <= '9' {
-                has_digit = true;
-            } else if ch == '.' {
-                has_period = true;
-            } else {
-                has_non_digit = true;
-            }
+    for ch in &chrs {
+        if *ch >= '0' && *ch <= '9' {
+            has_digit = true;
+        } else if *ch == '.' {
+            has_period = true;
+        } else {
+            has_non_digit = true;
         }
     }
+
+    // Check for escaped characters, eg: \,
+    if chrs.len() == 2 && chrs[0] == '\\' { s = &s[1..]; }
+
     return make_term(s, has_digit, has_non_digit, has_period);
 
 }  // parse_term
