@@ -32,9 +32,9 @@ pub fn test_backchaining() {
     fn z() -> Unifiable { logic_var!("$Z") }
 
     let c1 = scomplex!(atom!("parent"), atom!("Charles"), atom!("Tony"));
-    let c2 = scomplex!(atom!("parent"), atom!("Bill"), atom!("Audrey"));
-    let c3 = scomplex!(atom!("parent"), atom!("Maria"), atom!("Bill"));
-    let c4 = scomplex!(atom!("parent"), atom!("Tony"), atom!("Maria"));
+    let c2 = scomplex!(atom!("parent"), atom!("Bill"),    atom!("Audrey"));
+    let c3 = scomplex!(atom!("parent"), atom!("Maria"),   atom!("Bill"));
+    let c4 = scomplex!(atom!("parent"), atom!("Tony"),    atom!("Maria"));
 
     // Make facts.
     let f1 = make_fact(c1);
