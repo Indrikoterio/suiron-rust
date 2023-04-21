@@ -261,6 +261,7 @@ pub mod built_in_comparison;
 pub mod built_in_arithmetic;
 pub mod built_in_print_list;
 pub mod built_in_count;
+pub mod built_in_join;
 pub mod time_out;
 pub mod infix;
 
@@ -295,5 +296,6 @@ pub use built_in_comparison::*;
 pub use built_in_arithmetic::*;
 pub use built_in_print_list::*;
 pub use built_in_count::*;
+pub use built_in_join::*;
 pub use time_out::*;
 pub use infix::*;
