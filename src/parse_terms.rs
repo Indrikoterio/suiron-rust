@@ -266,6 +266,7 @@ fn make_term(to_parse: &str,
         // Try complex terms, eg.:  job(programmer)
         else if first != '(' && last == ')' {
             // Check for built-in functions.
+            if s.starts_with("join(")     { return parse_function(s); }
             if s.starts_with("add(")      { return parse_function(s); }
             if s.starts_with("subtract(") { return parse_function(s); }
             if s.starts_with("multiply(") { return parse_function(s); }
