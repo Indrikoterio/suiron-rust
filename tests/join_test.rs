@@ -11,7 +11,7 @@
 //
 // will become:  coffee, tea or juice
 //
-// Note that the comma requires backslash.
+// Note that the comma in the list needs to be escaped by a backslash.
 //
 // Cleve Lendon  2023
 
