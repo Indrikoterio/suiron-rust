@@ -67,13 +67,18 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
     let mut i = 0;
     while i < length {
 
-        // Skip past quoted text: ">>>>>"
         let c1 = chrs[i];
+        let mut c2 = '#';
+        if i < length - 1 { c2 = chrs[i + 1]; }
+        let mut c3 = '#';
+        if i < length - 2 { c3 = chrs[i + 2]; }
+
+        // Skip past quoted text: ">>>>>"
         if c1 == '"' {
             let mut j = i + 1;
             while j < length  {
-                let c2 = chrs[j];
-                if c2 == '"' {
+                let cx = chrs[j];
+                if cx == '"' {
                     i = j;
                     break;
                 }
@@ -84,8 +89,8 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
             // Skip past text within parentheses: (...)
             let mut j = i + 1;
             while j < length {
-                let c2 = chrs[j];
-                if c2 == ')' {
+                let cx = chrs[j];
+                if cx == ')' {
                     i = j;
                     break;
                 }
@@ -103,12 +108,7 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
             // Good: $X = 1
             if i >= (length - 2) { return (Infix::None, 0); }
             if c1 == '<' {
-                let c2 = chrs[i + 1];
                 if c2 == '=' {
-                    // Bad:  $X <=1
-                    // Good: $X <= 1
-                    if i >= length - 3 { return (Infix::None, 0); }
-                    let c3 = chrs[i + 2];
                     if c3 == ' ' {
                         return (Infix::LessThanOrEqual, i);
                     }
@@ -118,12 +118,7 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
                 }
             }
             else if c1 == '>' {
-                let c2 = chrs[i + 1];
                 if c2 == '=' {
-                    // Bad:  $X >=1
-                    // Good: $X >= 1
-                    if i >= length - 3 { return (Infix::None, 0); }
-                    let c3 = chrs[i + 2];
                     if c3 == ' ' {
                         return (Infix::GreaterThanOrEqual, i);
                     }
@@ -133,12 +128,7 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
                 }
             }
             else if c1 == '=' {
-                let c2 = chrs[i + 1];
                 if c2 == '=' {
-                    // Bad:  $X ==1
-                    // Good: $X == 1
-                    if i >= length - 3 { return (Infix::None, 0); }
-                    let c3 = chrs[i + 2];
                     if c3 == ' ' {
                         return (Infix::Equal, i);
                     }
@@ -191,13 +181,16 @@ pub fn check_arithmetic_infix(chrs: &Vec<char>) -> (Infix, usize) {
     let mut i = 0;
     while i < length {
 
-        // Skip past quoted text: ">>>>>"
         let c1 = chrs[i];
+        let mut c2 = '#';
+        if i < length - 1 { c2 = chrs[i + 1]; }
+
+        // Skip past quoted text: ">>>>>"
         if c1 == '"' {
             let mut j = i + 1;
             while j < length  {
-                let c2 = chrs[j];
-                if c2 == '"' {
+                let cx = chrs[j];
+                if cx == '"' {
                     i = j; break;
                 }
                 j += 1;
@@ -207,8 +200,8 @@ pub fn check_arithmetic_infix(chrs: &Vec<char>) -> (Infix, usize) {
             // Skip past text within parentheses: (...)
             let mut j = i + 1;
             while j < length {
-                let c2 = chrs[j];
-                if c2 == ')' {
+                let cx = chrs[j];
+                if cx == ')' {
                     i = j; break;
                 }
                 j += 1;
@@ -225,14 +218,13 @@ pub fn check_arithmetic_infix(chrs: &Vec<char>) -> (Infix, usize) {
 
             // Bad:  $X =1
             // Good: $X = 1
-            if i >= (length - 2) { return (Infix::None, 0); }
-            if c1 == '+' { if chrs[i + 1] == ' ' { return (Infix::Plus, i); } }
+            if c1 == '+' { if c2 == ' ' { return (Infix::Plus, i); } }
             else
-            if c1 == '-' { if chrs[i + 1] == ' ' { return (Infix::Minus, i); } }
+            if c1 == '-' { if c2 == ' ' { return (Infix::Minus, i); } }
             else
-            if c1 == '*' { if chrs[i + 1] == ' ' { return (Infix::Multiply, i); } }
+            if c1 == '*' { if c2 == ' ' { return (Infix::Multiply, i); } }
             else
-            if c1 == '/' { if chrs[i + 1] == ' ' { return (Infix::Divide, i); } }
+            if c1 == '/' { if c2 == ' ' { return (Infix::Divide, i); } }
         } // else
 
         prev = c1;
