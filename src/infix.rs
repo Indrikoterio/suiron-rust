@@ -69,9 +69,9 @@ pub fn check_infix(chrs: &Vec<char>) -> (Infix, usize) {
 
         let c1 = chrs[i];
         let mut c2 = '#';
-        if i < length - 1 { c2 = chrs[i + 1]; }
+        if i + 1 < length { c2 = chrs[i + 1]; }
         let mut c3 = '#';
-        if i < length - 2 { c3 = chrs[i + 2]; }
+        if i + 2 < length { c3 = chrs[i + 2]; }
 
         // Skip past quoted text: ">>>>>"
         if c1 == '"' {
@@ -183,7 +183,7 @@ pub fn check_arithmetic_infix(chrs: &Vec<char>) -> (Infix, usize) {
 
         let c1 = chrs[i];
         let mut c2 = '#';
-        if i < length - 1 { c2 = chrs[i + 1]; }
+        if i + 1 < length { c2 = chrs[i + 1]; }
 
         // Skip past quoted text: ">>>>>"
         if c1 == '"' {
