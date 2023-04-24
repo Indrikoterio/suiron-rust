@@ -318,7 +318,7 @@ pub fn make_solution_node<'a>(goal: Rc<Goal>,
 
                     // Solution node of first goal.
                     let head_node = make_solution_node(Rc::new(head), kb,
-                                                       Rc::clone(&ss),
+                                                       ss,
                                                        Rc::clone(&rc_node));
 
                     set_head_node(&rc_node, head_node);
