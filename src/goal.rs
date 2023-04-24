@@ -331,7 +331,7 @@ pub fn make_solution_node<'a>(goal: Rc<Goal>,
                     let goal = goals[0].clone();
                     let rc_node = rc_cell!(node);
                     let head_node = make_solution_node(Rc::new(goal), kb,
-                                                       Rc::clone(&ss),
+                                                       ss,
                                                        Rc::clone(&rc_node));
                     set_head_node(&rc_node, head_node);
                     return rc_node;
