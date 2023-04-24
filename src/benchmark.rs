@@ -5,6 +5,7 @@
 //!
 //! > cargo bench
 //! > sudo cargo profile cpu per-fn bench --bench suiron_benchmark
+//! > sudo cargo flamegraph --bench suiron_benchmark
 //!
 // Cleve Lendon 2023
 
