@@ -10,6 +10,8 @@
 use std::fmt;
 use std::rc::Rc;
 
+use crate::empty_ss;
+
 use super::goal::Goal;
 use super::logic_var::*;
 use super::s_linked_list::*;
@@ -256,7 +258,7 @@ impl Unifiable {
                         if self_terms.len() != other_len { return None; }
 
                         let mut new_ss = ss;  // borrowed Rc
-                        let mut ss2: Rc<SubstitutionSet<'a>>;
+                        let mut ss2 = empty_ss!();
 
                         // Unify all terms.
                         let mut i = 0;
@@ -278,7 +280,7 @@ impl Unifiable {
                             new_ss = &ss2;
                             i += 1;
                         } // while
-                        return Some(Rc::clone(new_ss));
+                        return Some(ss2);
                     },
                     Unifiable::LogicVar{id: _, name: _} => {
                         return other.unify(self, ss);
