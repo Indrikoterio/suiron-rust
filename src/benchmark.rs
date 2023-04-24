@@ -3,6 +3,9 @@
 //! This module performs a Q sort on a list of numbers, to measure
 //! the speed of the inference engine.
 //!
+//! > cargo bench
+//! > sudo cargo profile cpu per-fn bench --bench suiron_benchmark
+//!
 // Cleve Lendon 2023
 
 use std::process;
