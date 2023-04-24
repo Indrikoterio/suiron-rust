@@ -280,7 +280,7 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                 sn_ref.rule_index += 1;
 
                 let head = rule.get_head();
-                let solution = head.unify(&cmplx, &Rc::clone(&sn_ref.ss));
+                let solution = head.unify(&cmplx, &sn_ref.ss);
 
                 match solution {
                     None => { set_var_id(fallback_id); },  // Restore fallback ID.
