@@ -264,6 +264,7 @@ pub mod built_in_count;
 pub mod built_in_join;
 pub mod time_out;
 pub mod infix;
+pub mod benchmark;
 
 #[macro_use]
 pub mod macros;
@@ -299,3 +300,4 @@ pub use built_in_count::*;
 pub use built_in_join::*;
 pub use time_out::*;
 pub use infix::*;
+pub use benchmark::*;
