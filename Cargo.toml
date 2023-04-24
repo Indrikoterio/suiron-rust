@@ -13,6 +13,9 @@ strip = true
 opt-level = 2
 panic = "abort"    # Needed
 
+[profile.bench]
+opt-level = 2
+
 [[bin]]
 name = "query"
 path = "src/main.rs"
