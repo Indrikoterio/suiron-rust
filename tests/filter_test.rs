@@ -2,7 +2,25 @@
 //
 // The include and exclude() predicates filter a list of terms to produce a new list.
 //
-// For example:
+// Facts:
+// male(Sheldon).
+// male(Leonard).
+// male(Raj).
+// male(Howard).
+// female(Penny).
+// female(Bernadette).
+// female(Amy).
+//
+// Rules:
+// get_people($X) :- $X = [male(Sheldon), male(Leonard), male(Raj),
+//                         male(Howard), female(Penny),
+//                         female(Bernadette), female(Amy)].
+// list_wimmin($W) :- get_people($X), include($X, female($_), $W).
+// list_nerds($N)  :- get_people($X), exclude($X, female($_), $N).
+//
+// Queries:
+//   ?- list_wimmin($W).
+//   ?- list_nerds($N).
 //
 // Cleve Lendon  2023
 
@@ -25,7 +43,7 @@ pub fn test_filter() {
 
     let mut kb = KnowledgeBase::new();
 
-    // get_people($X) = $X = [male(Sheldon), male("Leonard"), ...].
+    // get_people($X) :- $X = [male(Sheldon), male(Leonard), ...].
     fn x() -> Unifiable { logic_var!("$X") }
     let get_people = scomplex!(atom!("get_people"), x());
     let uni = unify!(x(), list_of_people());
