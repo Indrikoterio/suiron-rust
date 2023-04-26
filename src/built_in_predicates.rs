@@ -16,6 +16,7 @@ use super::built_in_print::*;
 use super::built_in_count::*;
 use super::built_in_append::*;
 use super::built_in_filter::*;
+use super::built_in_functor::*;
 use super::built_in_comparison::*;
 use super::built_in_print_list::*;
 use super::substitution_set::*;
@@ -118,7 +119,7 @@ pub fn next_solution_bip<'a>(sn: Rc<RefCell<SolutionNode<'a>>>,
             return next_solution_append(bip, &sn_ref.ss);
         },
         "functor" => {
-            panic!("Implement this: functor()");
+            return next_solution_functor(bip, &sn_ref.ss);
         },
         "include" => { // filters a list
             return bip_include(bip, &sn_ref.ss);
