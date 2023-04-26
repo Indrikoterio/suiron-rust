@@ -1,0 +1,4 @@
+# Bad rule for testing.
+parent(Godwin, Tostig).
+par
+mother($X, $Y) :- parent($X, $Y), female($X).
