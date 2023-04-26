@@ -220,7 +220,11 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                 },
 
                 Operator::Time(_) => {
-                    let sn_ref = sn.borrow_mut();
+
+                    let mut sn_ref = sn.borrow_mut();
+                    if !sn_ref.more_solutions { return None; };
+                    sn_ref.more_solutions = false;
+
                     match &sn_ref.head_sn {
                         Some(head_sn) => {
                             let now = Instant::now();
@@ -231,21 +235,29 @@ pub fn next_solution<'a>(sn: Rc<RefCell<SolutionNode<'a>>>)
                         None => { panic!("next_solution() - \
                                   Missing solution node. Should not happen."); },
                     } // match
+
                 }, // Time
 
                 Operator::Not(_) => {
-                    let sn_ref = sn.borrow_mut();
+
+                    let mut sn_ref = sn.borrow_mut();
+                    if !sn_ref.more_solutions { return None; };
+
                     match &sn_ref.head_sn {
                         Some(head_sn) => {
                             let solution = next_solution(Rc::clone(&head_sn));
                             match solution {
                                 Some(_) => return None,
-                                None => return Some(Rc::clone(&sn_ref.ss)),
+                                None => {
+                                    sn_ref.more_solutions = false;
+                                    return Some(Rc::clone(&sn_ref.ss));
+                                },
                             }
                         },
                         None => { panic!("next_solution() - \
                                   Missing solution node. Should not happen."); },
                     } // match
+
                 }, // Not
 
             } // match op
