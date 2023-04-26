@@ -202,10 +202,10 @@ impl fmt::Display for Operator {
                 write!(f, "{}", format_list(goals, "; "))
             },
             Operator::Time(goals) => {
-                write!(f, "{}", goals[0])
+                write!(f, "time({})", goals[0])
             },
             Operator::Not(goals) => {
-                write!(f, "{}", goals[0])
+                write!(f, "not({})", goals[0])
             },
         } // match
     } // fmt
