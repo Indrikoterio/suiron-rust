@@ -1,0 +1,5 @@
+#!/bin/bash
+# The tests test_solve_timeout() and test_solve_all_timeout()
+# have endless loops, in order to force a timeout.
+# They require a stack which is larger than the 2 Meg default.
+export RUST_MIN_STACK=8000000 && cargo test
