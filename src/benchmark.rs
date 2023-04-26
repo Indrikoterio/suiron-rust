@@ -1,12 +1,18 @@
 //! Module for benchmarking.
 //!
-//! This module performs a Q sort on a list of numbers, to measure
-//! the speed of the inference engine.
+//! This module performs a Q sort on a list of numbers, in order
+//! to measure the speed of the inference engine, and to compare
+//! it with other implementations.
 //!
+//! Run the following command from the CLI:
+//! <pre>
 //! > cargo bench
-//! > sudo cargo profile cpu per-fn bench --bench suiron_benchmark
-//! > sudo cargo flamegraph --bench suiron_benchmark
-//!
+//! </pre>
+//
+// Other potentially useful commands.
+// > sudo cargo profile cpu per-fn bench --bench suiron_benchmark
+// > sudo cargo flamegraph --bench suiron_benchmark
+//
 // Cleve Lendon 2023
 
 use std::process;
@@ -18,10 +24,12 @@ use super::solutions::*;
 use super::rule_reader::*;
 use super::knowledge_base::*;
 
+/// Reads in a qsort algorithm and data from a file, then runs the algorithm.
+///
 pub fn benchmark() {
 
     let file_path = "./tests/qsort.txt";
-    println!("Loading file: {}", file_path);
+    //println!("Loading file: {}", file_path);
 
     let mut kb = KnowledgeBase::new();
     let result = load_kb_from_file(&mut kb, &file_path);
