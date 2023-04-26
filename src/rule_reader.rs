@@ -447,6 +447,21 @@ mod test {
         }
     } // test_separate_rules()
 
+    // Test read_facts_and_rules() with invalid filename.
+    #[test]
+    fn test_invalid_filename() {
+        let filename = "non-existent-file.txt";
+        let rules = read_facts_and_rules(filename);
+        match rules {
+            Ok(_rules) => { panic!("The file {} should not exist.", filename); },
+            Err(msg) => {
+                if !msg.contains("No such file") {
+                    panic!("Invalid error message: {}", msg);
+                }
+            },
+        }
+    } // test_invalid_filename
+
     // Reads Suiron facts and rules from a text file.
     // Confirm that the correct number of rules were read.
     // Check to ensure that the last rule is correct.
