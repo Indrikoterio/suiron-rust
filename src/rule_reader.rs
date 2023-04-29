@@ -15,10 +15,10 @@ use crate::*;
 /// includes the offending line.
 ///
 /// # Arguments
-/// * `kb` - knowledge base
-/// * `file_name`
+/// * knowledge base
+/// * file_name
 /// # Return
-/// `Option` - Some(error message) or None
+/// error message or None
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -63,10 +63,10 @@ pub fn load_kb_from_file(kb: &mut KnowledgeBase, file_name: &str) -> Option<Stri
 /// Produces a parsing error message, which includes the previous line.
 ///
 /// # Arguments
-/// * `err` - error message
-/// * `previous_line`
+/// * error message
+/// * previous line
 /// # Return
-/// * `new error message`
+/// * new error message
 fn load_parse_error(err: String, previous_line: String) -> String {
     if previous_line.len() == 0 {
         return format!("{} {}", err, "Check start of file.");
@@ -82,9 +82,9 @@ fn load_parse_error(err: String, previous_line: String) -> String {
 /// * Checks for unmatched parentheses and brackets.
 ///
 /// # Arguments
-/// * `file_name`
+/// * file_name
 /// # Return
-/// * `Result` - Ok(vector of rules) or Err(msg)
+/// * vector of rules or error message
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -424,8 +424,8 @@ mod test {
             mother(Necessity, Invention). mother(Necessity, Innovation).";
 
         let expected = "[\"sibling($X, $Y) :- mother($Z, $X), mother($Z, $Y), !.\", \
-                 \"mother(Necessity, Invention).\", \
-                 \" mother(Necessity, Innovation).\"]";
+                         \"mother(Necessity, Invention).\", \
+                         \" mother(Necessity, Innovation).\"]";
 
         let bad_text = "sibling($X, $Y) :- mother($Z, $X), mother($Z, $Y), !.\
                 mother(Necessity, Invention. mother(Necessity, Innovation).";
