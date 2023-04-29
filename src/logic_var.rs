@@ -10,6 +10,7 @@
 //! to give them unique IDs.
 //! 
 //! See [recreate_variables()](../unifiable/enum.Unifiable.html#method.recreate_variables).
+//!
 
 use std::collections::HashMap;
 use super::unifiable::*;
@@ -35,7 +36,7 @@ pub fn get_var_id() -> usize {
 
 /// Sets the logic variable ID to the given value.
 /// # Arguments
-/// * `id`
+/// * id
 pub fn set_var_id(id: usize) {
     unsafe {
         LOGIC_VAR_ID = id;
@@ -62,10 +63,10 @@ pub type VarMap = HashMap<String, usize>;
 /// rules in the knowledge base, but when a rule is fetched from the knowledge
 /// base, the logic variable must be recreated with a unique ID.
 /// # Arguments
-/// * `name`
+/// * name
 /// # Return
-/// * `Result` - Ok([logic variable](../unifiable/enum.Unifiable.html#variant.LogicVar))
-/// or Err(message)
+/// * [logic variable](../unifiable/enum.Unifiable.html#variant.LogicVar)
+/// or error message
 pub fn make_logic_var<'a>(name: String) -> Result<Unifiable, String> {
 
     let trimmed = name.trim();
@@ -89,13 +90,13 @@ pub fn make_logic_var<'a>(name: String) -> Result<Unifiable, String> {
 
 } // make_logic_var()
 
-
-// Formats an error message for make_logic_var().
-// Arguments:
-//   err - error description
-//   bad - string which caused the error
-// Return:
-//   error message (String)
+/// Formats an error message for make_logic_var().
+///
+/// # Arguments
+/// * error description
+/// * string which caused the error
+/// # Return
+/// * error message
 fn mlv_error(err: &str, bad: &str) -> String {
     format!("make_logic_var() - {}: {}", err, bad)
 }
