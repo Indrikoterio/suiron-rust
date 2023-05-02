@@ -1,6 +1,6 @@
 //! # Suiron
 //!
-//! Suiron is a fast inference engine.
+//! Suiron implements a fast inference engine.
 //! Its fact/rule definition language is similar to Prolog, but there are some differences.
 //!
 //! To understand how to use Suiron, a basic understanding of
