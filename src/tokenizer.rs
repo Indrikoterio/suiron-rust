@@ -18,7 +18,7 @@ use super::parse_stack::*;
 /// * a character
 /// # Return
 /// * boolean, true or false
-fn letter_number_hyphen(ch: char) -> bool {
+pub fn letter_number_hyphen(ch: char) -> bool {
     if ch >= 'a' && ch <= 'z' { return true; }
     if ch >= 'A' && ch <= 'Z' { return true; }
     if ch >= '0' && ch <= '9' { return true; }
