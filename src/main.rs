@@ -1,3 +1,10 @@
+//! This binary crate demonstrates the use of the Suiron library crate.
+//!
+//! Suiron implements a source code parser, a knowledge base, and an
+//! inference engine.<br>
+//! Query uses Suiron to load a logic program and evaluate queries
+//! to the knowledge base.
+//!
 use std::env;
 use std::rc::Rc;
 use std::process;
@@ -6,7 +13,40 @@ use std::io::{stdout, Write};
 
 use suiron::*;
 
-fn query() {
+/// The `query` binary loads a Suiron program and prompts for queries.
+///
+/// In addition to this program, there is a demo program located
+/// [here](../../../suiron_demo/target/doc/suiron_demo/index.html).
+///
+/// # Usage
+/// Open a command line interface, and navigate to the `suiron-rust` folder.
+///
+/// Enter the `cargo run` command, with the name of a source file which
+/// contains facts and rules.<br>In the example shown here, the source file
+/// is [kings.txt](../../../tests/kings.txt)
+/// ```
+/// cargo run -- tests/kings.txt
+/// ```
+/// The program will prompt for a query:
+/// ```
+/// Loading file: tests/kings.txt
+/// ?-
+/// ```
+/// Enter a query, such as:
+/// ```
+/// ?- grandfather($X, Harold).
+/// ```
+/// The program should respond with:
+/// ```
+/// $X = Godwin
+/// No more.
+/// ?-
+/// ```
+///
+/// # Tutorial
+/// An on-line tutorial can be found [here](https://klivo.net/suiron/).
+///
+fn main() {
 
     let args: Vec<String> = env::args().collect();
 
@@ -59,12 +99,7 @@ fn query() {
         println!("Usage:");
         println!("cargo run -- tests/kings.txt\n");
     }
-} // query()
-
-
-fn main() {
-    query();
-}
+} // main()
 
 /*
     Memory made safe,
