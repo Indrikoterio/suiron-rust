@@ -115,18 +115,18 @@ pub fn solve_all<'a>(sn: Rc<RefCell<SolutionNode<'a>>>) -> Vec<String> {
 /// Formats the results of a query for display.
 ///
 /// For example, if the query were `loves(Leonard, $Whom)`, and
-/// the result were `loves(Leonard, Penny)`, then the function would
-/// return: `$Whom = Penny`
+/// the result were `loves(Leonard, Penny)`, then the function
+/// would return: `$Whom = Penny`
 ///
 /// This function iterates through the query's terms. For every
 /// logic variable in the query, it prints the variable's name
 /// and the corresponding term from the result.
 ///
 /// # Arguments
-/// * `query` - [Goal](../goal/enum.Goal.html)
-/// * `result` - [Unifiable](../unifiable/enum.Unifiable.html) term
+/// * query - [Goal](../goal/enum.Goal.html)
+/// * [Unifiable](../unifiable/enum.Unifiable.html) term
 /// # Return
-/// * `formatted solution` - String
+/// * formatted solution
 /// # Usage
 /// ```
 /// use std::rc::Rc;
@@ -177,7 +177,7 @@ pub fn format_solution(query: &Goal, result: &Unifiable) -> String {
 /// If RUST_MIN_STACK is not set, returns 0.
 ///
 /// # Return
-/// * `stack size` - i32
+/// * stack size (i32)
 pub fn get_stack_size() -> i32 {
     let rust_min_stack = match env::var("RUST_MIN_STACK") {
         Ok(val) => val,
