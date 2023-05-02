@@ -1,0 +1,72 @@
+# This file contains facts and rules for the demo program suiron_demo.rs.
+# Klivo - 2020/06
+#
+# check_pron_verb
+# Check the agreement between a pronoun subject and verb. For example,
+# 'He is' is OK, because both 'He' and 'is' are third person singular,
+# but 'He are' is wrong.
+#
+# The arguments are:
+#   original pronoun
+#   person (first, second, third)
+#   plurality (singular, plural)
+#   original verb
+#   verb form (base, past, third_sing)
+#
+check_pron_verb($_, first, singular, $_, base) :- !.  # OK
+check_pron_verb($_, first, singular, $_, past) :- !.  # OK
+check_pron_verb($_, second, singular, $_, base) :- !.  # OK
+check_pron_verb($_, second, singular, $_, past) :- !.  # OK
+check_pron_verb($_, third, singular, $_, third_sing) :- !.  # OK
+check_pron_verb($_, third, singular, $_, past) :- !.  # OK
+
+check_pron_verb($_, first, plural, $_, base) :- !.  # OK
+check_pron_verb($_, first, plural, $_, past) :- !.  # OK
+check_pron_verb($_, second, plural, $_, base) :- !.  # OK
+check_pron_verb($_, second, plural, $_, past) :- !.  # OK
+check_pron_verb($_, third, plural, $_, base) :- !.  # OK
+check_pron_verb($_, third, plural, $_, past) :- !.  # OK
+# Else
+check_pron_verb($Pr, $_, $_, $V, $_) :- print(" --> '%s' and '%s' do not agree.", $Pr, $V).
+
+# check_noun_verb
+# Check the agreement between a noun subject and verb.
+# Love lasts. - OK
+# Diamonds last. - OK
+# Diamonds lasts. - Not good.
+check_noun_verb($_, $_, $_, past) :- !.  # OK
+check_noun_verb($_, singular, $_, third_sing) :- !.  # OK
+check_noun_verb($_, plural, $_, base) :- !.  # OK
+check_noun_verb($N, $_, $V, $_) :- print(" --> '%s' and '%s' do not agree.", $N, $V).
+
+# show - To display the contents of a list.
+show($In) :- $In = [$H | $T], print(%s, $H), nl, show($T).
+show([]) :- print(------------), nl.
+
+# remove_punc - Rule to remove punctuation.
+remove_punc([period($_) | $T], $T2) :- !, remove_punc($T, $T2).
+remove_punc([comma($_) | $T], $T2)  :- !, remove_punc($T, $T2).
+remove_punc([question_mark($_) | $T], $T2) :-   !, remove_punc($T, $T2).
+remove_punc([exlamation_mark($_) | $T], $T2) :- !, remove_punc($T, $T2).
+remove_punc([colon($_) | $T], $T2) :- !, remove_punc($T, $T2).
+remove_punc([dash($_) | $T], $T2)  :- !, remove_punc($T, $T2).
+remove_punc([semicolon($_) | $T], $T2) :- !, remove_punc($T, $T2).
+remove_punc([quote_mark($_, $_) | $T], $T2) :- !, remove_punc($T, $T2).
+remove_punc([bracket($_, $_) | $T], $T2)    :- !, remove_punc($T, $T2).
+remove_punc([$H | $T], [$H | $T2]) :- remove_punc($T, $T2).
+remove_punc([], []).
+
+# sentence - Analyze a sentence.
+# Pronoun subject, verb
+sentence([pronoun($PS, subject, $Person, $Plur), verb($V, $_, $VerbForm)], [$PS, $V]) :- check_pron_verb($PS, $Person, $Plur, $V, $VerbForm).
+
+# Noun subject, verb
+sentence([noun($N, $Plur), verb($V, $_, $VerbForm)], [$N, $V]) :- check_noun_verb($N, $Plur, $V, $VerbForm).
+
+# Pronoun subject, Verb, Object
+sentence([pronoun($PS, subject, $Person, $Plur), verb($V, $_, $VerbForm), pronoun($PO, object, $_, $_)], [$PS, $V, $PO]) :- check_pron_verb($PS, $Person, $Plur, $V, $VerbForm).
+
+# Noun subject, Verb, Object
+sentence([noun($N, $Plur), verb($V, $_, $VerbForm), pronoun($PO, object, $_, $_)], [$N, $V, $PO]) :- check_noun_verb($N, $Plur, $V, $VerbForm).
+
+parse($In, $Out) :- words_to_pos($In, $In2), remove_punc($In2, $In3), sentence($In3, $Out).
