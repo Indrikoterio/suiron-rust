@@ -24,7 +24,7 @@ use crate::*;
 /// use suiron::*;
 ///
 /// let mut kb = KnowledgeBase::new();
-/// let result = load_kb_from_file(&mut kb, "./tests/kings.txt");
+/// let result = load_kb_from_file(&mut kb, "SUIRON_TEST_DIR/kings.txt");
 /// match result {
 ///     Some(err) => { println!("{}", err); },
 ///     None => { // All OK.
@@ -89,7 +89,7 @@ fn load_parse_error(err: String, previous_line: String) -> String {
 /// ```
 /// use suiron::*;
 ///
-/// match read_facts_and_rules("./tests/kings.txt") {
+/// match read_facts_and_rules("SUIRON_TEST_DIR/kings.txt") {
 ///     Ok(rules) => { println!("{:?}", rules); },
 ///     Err(parsing_error) => { println!("{}", parsing_error); },
 /// }
@@ -210,9 +210,9 @@ fn strip_comments(line: &str) -> String {
 /// Each rule or fact ends with a period.
 ///
 /// # Arguments
-/// * `text` - one long line
+/// * text - one long line
 /// # Return
-/// * `Result` - Ok(list of facts/rules) or Err(message)
+/// * list of facts/rules or error message
 ///
 fn separate_rules(text: &str) -> Result<Vec<String>, String> {
 
@@ -273,10 +273,10 @@ fn separate_rules(text: &str) -> Result<Vec<String>, String> {
 /// period and the equal sign.
 ///
 /// # Arguments
-/// * `line` - &str
-/// * `line number`
+/// * line
+/// * line number
 /// # Return
-/// * `Option` - Some(error message) or None
+/// * error message, if any
 fn check_last_char(line: &str, num: usize) -> Option<String> {
     let chrs = str_to_chars!(line);
     let length = chrs.len();
@@ -468,7 +468,8 @@ mod test {
     #[test]
     fn test_read_facts_and_rules() {
 
-        let rules = read_facts_and_rules("tests/kings.txt");
+        let path = format!("{}/kings.txt", env!("SUIRON_TEST_DIR"));
+        let rules = read_facts_and_rules(&path);
         match rules {
             Ok(rules) => {
                 let n = rules.len();
@@ -482,7 +483,8 @@ mod test {
             Err(msg) => { println!("{}", msg); },
         }
 
-        let rules = read_facts_and_rules("tests/badrule1.txt");
+        let path = format!("{}/badrule1.txt", env!("SUIRON_TEST_DIR"));
+        let rules = read_facts_and_rules(&path);
         match rules {
             Ok(_) => { panic!("Should produce error message."); },
             Err(msg) => {
@@ -492,7 +494,8 @@ mod test {
             },
         }
 
-        let rules = read_facts_and_rules("tests/badrule2.txt");
+        let path = format!("{}/badrule2.txt", env!("SUIRON_TEST_DIR"));
+        let rules = read_facts_and_rules(&path);
         match rules {
             Ok(_) => { panic!("Should produce error message."); },
             Err(msg) => {
@@ -502,7 +505,8 @@ mod test {
             },
         }
 
-        let rules = read_facts_and_rules("tests/badrule3.txt");
+        let path = format!("{}/badrule3.txt", env!("SUIRON_TEST_DIR"));
+        let rules = read_facts_and_rules(&path);
         match rules {
             Ok(_) => { panic!("Should produce error message."); },
             Err(msg) => {
@@ -515,7 +519,8 @@ mod test {
     #[test]
     fn test_load_kb_from_file() {
         let mut kb = KnowledgeBase::new();
-        let result = load_kb_from_file(&mut kb, "./tests/kings.txt");
+        let path = format!("{}/kings.txt", env!("SUIRON_TEST_DIR"));
+        let result = load_kb_from_file(&mut kb, &path);
         match result {
             Some(err) => { panic!("Should be no errors: {}", err); },
             None => { // All OK.
