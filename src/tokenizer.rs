@@ -11,9 +11,7 @@ use super::operator::Operator;
 use super::token::{*, Token, TokenType};
 use super::parse_stack::*;
 
-/// letter_number_hyphen()
-/// Determines whether the given character is a letter,
-/// number or hyphen.
+/// Determines whether the given character is a letter, number or hyphen.
 /// # Arguments
 /// * a character
 /// # Return
@@ -29,12 +27,11 @@ pub fn letter_number_hyphen(ch: char) -> bool {
     return false;
 } // letter_number_hyphen()
 
-/// invalid_between_terms()
 /// Quote, hash and 'at' are invalid between terms.
 /// # Arguments
-/// * `ch` - character
+/// * character
 /// # Return
-/// * `true or false` - True means invalid.
+/// * bool - true means invalid.
 fn invalid_between_terms(ch: char) -> bool {
     if ch == '"' { return true; }
     if ch == '#' { return true; }
