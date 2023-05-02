@@ -63,18 +63,8 @@ fn query() {
 
 
 fn main() {
-
     query();
-
-println!("***********************");
-println!("Size of <Unifiable> is {}", std::mem::size_of::<Unifiable>());
-println!("Size of <Box<Unifiable>> is {}", std::mem::size_of::<Box<Unifiable>>());
-println!("Size of <Rc<Unifiable>> is {}", std::mem::size_of::<Rc<Unifiable>>());
-println!("Size of SolutionNode is {}", std::mem::size_of::<SolutionNode>());
-println!("***********************");
-
-
-} //-------------------------------
+}
 
 /*
     Memory made safe,
