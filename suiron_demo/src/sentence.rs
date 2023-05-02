@@ -184,6 +184,8 @@ fn get_words(sentence: &str) -> Vec<String> {
 
 /// Divides a sentence into words.
 ///
+/// This function replaces new-lines with spaces and strips whitespace.
+///
 /// # Argument
 /// * original sentence
 /// # Return
