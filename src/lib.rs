@@ -190,7 +190,7 @@
 //! ## License
 //!
 //! The source code for Suiron is licensed under the MIT license,
-//! which you can find here:  [LICENSE](./LICENSE).
+//! which you can find here: [LICENSE](../../../LICENSE.txt).
 //!
 
 pub mod unifiable;
