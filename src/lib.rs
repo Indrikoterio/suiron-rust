@@ -1,11 +1,16 @@
 //! # Suiron
 //!
-//! Suiron implements a fast inference engine.
+//! Suiron is a fast inference engine.
 //! Its fact/rule definition language is similar to Prolog, but there are some differences.
 //!
 //! To understand how to use Suiron, a basic understanding of
-//! [Prolog](https://en.wikipedia.org/wiki/Prolog) is required.
-//! There is an online test site and tutorial at:
+//! [Prolog](https://en.wikipedia.org/wiki/Prolog) is helpful.
+//! Here are a couple of useful links:
+//!
+//! &nbsp; &nbsp; [Logic Programming](http://athena.ecs.csus.edu/~mei/logicp/prolog.html)<br>
+//! &nbsp; &nbsp; [cse341](https://courses.cs.washington.edu/courses/cse341/12au/prolog/basics.html)
+//!
+//! There is an online test site and tutorial for Suiron at:
 //! [klivo.net/suiron](https://klivo.net/suiron)
 //!
 //! ## Briefly
@@ -18,7 +23,7 @@
 //! <pre>mother(June, Theodore).</pre>
 //!
 //! Here we see the main difference between Suiron and Prolog.
-//! In Prolog, lower case words are 'atoms' (that is, string constants) and upper case
+//! In Prolog, lower case words are `atoms` (that is, string constants) and upper case
 //! words are variables. In Suiron, atoms can be lower case or upper case. Thus 'mother',
 //! 'June' and 'Theodore' are all atoms. Suiron's atoms can even contain spaces.
 //!
@@ -30,7 +35,7 @@
 //! <pre>mother(June, $Child).</pre>
 //!
 //! The anonymous variable must also begin with a dollar sign: $\_ .
-//! A simple underscore '\_' is treated as an atom.
+//! A simple underscore `_` is treated as an atom.
 //! Below is an example of a rule which contains an anonymous variable:
 //!
 //! <pre>voter($P) :- $P = person($_, $Age), $Age >= 18.</pre>
@@ -38,7 +43,7 @@
 //! <br><hr><br>
 //!
 //! Facts and rules can also be created dynamically within a Rust application program.
-//! The fact mother(June, Theodore) could be created by calling the function parse_complex().
+//! The fact mother(June,&nbsp;Theodore) could be created by calling the function parse_complex().
 //!
 //! <pre>let fact = parse_complex("mother(June, Theodore).");</pre>
 //!
@@ -108,7 +113,7 @@
 //!
 //! The subfolder /suiron_demo contains a simple demo program which parses
 //! English sentences. If you intend to incorporate Suiron into your own project,
-//! this is a good reference.<br>
+//! this is a good reference.
 //! See: [Suiron Demo](../../../suiron_demo/target/doc/suiron_demo/index.html)
 //!
 //! The /target folder holds build results.
@@ -130,7 +135,7 @@
 //! ?- father($F, $C).</pre>
 //!
 //! After typing enter, the program will print out solutions, one after each press
-//! of Enter, until there are no more solutions.
+//! of &lt;enter&gt;, until there are no more solutions.
 //!
 //! <pre>
 //! cargo run -- test/kings.txt
@@ -162,7 +167,7 @@
 //!
 //! ## Contact
 //!
-//! To contact the developer, send email to indriko@yahoo.com .
+//! To contact the developer, send email to indriko@yahoo.com .<br>
 //! Comments, suggestions and criticism are welcomed.
 //!
 //! ## History
@@ -171,7 +176,7 @@
 //!
 //! ## Reference
 //!
-//! This inference engine is inspired by the Predicate Calculus Problem Solver
+//! This inference engine was inspired by the Predicate Calculus Problem Solver
 //! presented in chapters 23 and 24 of 'AI Algorithms...' by Luger and Stubblefield.
 //! I highly recommend this book.
 //!
