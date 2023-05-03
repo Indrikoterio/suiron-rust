@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 description = "A fast Prolog-like inference engine."
 license = "MIT"
+license-file = "LICENSE.txt"
+repository = "https://github.com/Indrikoterio/suiron-rust"
 
 [profile.dev]
 opt-level = 2
