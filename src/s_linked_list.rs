@@ -45,18 +45,18 @@ use crate::chars_to_string;
 ///
 /// The first argument, the vertical bar flag, is set true for lists
 /// which have a tail variable, such as:<br>
-/// <blockquote>
+/// <pre>
 /// [a, b | $Tail]
-/// </blockquote>
+/// </pred>
 ///
 /// # Note
 /// The macro [slist!](../macro.slist.html) can also be used to create lists.
 ///
 /// # Arguments
-/// * `vbar` - vertical bar flag |
-/// * `terms` - vector of unifiable terms
+/// * vertical bar flag |
+/// * vector of unifiable terms
 /// # Return
-/// `list` - ([SLinkedList](../unifiable/enum.Unifiable.html#variant.SLinkedList))
+/// [SLinkedList](../unifiable/enum.Unifiable.html#variant.SLinkedList)
 ///
 /// # Usage
 /// To build [a, b, c], assuming that a, b and c are atoms:
