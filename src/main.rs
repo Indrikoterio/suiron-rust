@@ -1,9 +1,7 @@
-//! This binary crate demonstrates the use of the Suiron library crate.
+//! This crate demonstrates the use of the Suiron library crate.
 //!
-//! Suiron implements a source code parser, a knowledge base, and an
-//! inference engine.<br>
-//! Query uses Suiron to load a logic program and evaluate queries
-//! to the knowledge base.
+//! Suiron implements a source code parser, a knowledge base, and an inference engine.<br>
+//! Query uses Suiron to load a program and evaluate queries to the knowledge base.
 //!
 use std::env;
 use std::rc::Rc;
@@ -21,9 +19,8 @@ use suiron::*;
 /// # Usage
 /// Open a command line interface, and navigate to the `suiron-rust` folder.
 ///
-/// Enter the `cargo run` command, with the name of a source file which
-/// contains facts and rules.<br>In the example shown here, the source file
-/// is [kings.txt](../../../tests/kings.txt)
+/// Enter the command `cargo run`, followed two dashes and the path of a source file.
+/// The source file shown here is: [tests/kings.txt](../../../tests/kings.txt)
 /// ```
 /// cargo run -- tests/kings.txt
 /// ```
@@ -99,6 +96,7 @@ fn main() {
         println!("Usage:");
         println!("cargo run -- tests/kings.txt\n");
     }
+
 } // main()
 
 /*
