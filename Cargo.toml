@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 description = "A fast Prolog-like inference engine."
 license = "MIT"
-license-file = "LICENSE.txt"
 repository = "https://github.com/Indrikoterio/suiron-rust"
 
 [profile.dev]
@@ -27,7 +26,7 @@ name = "suiron"
 path = "src/lib.rs"
 
 [dependencies]
-thread_timer = "*"
+thread_timer = "0.3.0"
 
 [dev-dependencies]
 serial_test = "*"
