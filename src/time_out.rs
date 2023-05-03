@@ -16,9 +16,9 @@ static mut SUIRON_STOP_QUERY: bool = false;
 /// flag to true, effectively halting a query.
 ///
 /// # Arguments
-/// * `timeout` - in milliseconds
+/// * timeout in milliseconds
 /// # Return
-/// * `timer` - ThreadTimer
+/// * ThreadTimer
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -36,7 +36,7 @@ pub fn start_query_timer(milliseconds: u64) -> ThreadTimer {
 /// Cancels query timer. Ignores any issues.
 ///
 /// # Argument
-/// * `timer` - ThreadTimer
+/// * ThreadTimer
 /// # Usage
 /// ```
 /// use suiron::*;
@@ -75,7 +75,7 @@ pub fn stop_query() {
 ///
 /// If the SUIRON_STOP_QUERY is true, it means that the query timed out.
 /// # Return
-/// * `SUIRON_STOP_QUERY` - bool
+/// * true/false
 pub fn query_stopped() -> bool {
     unsafe { SUIRON_STOP_QUERY }
 }
