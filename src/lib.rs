@@ -15,85 +15,62 @@
 //!
 //! Below is an example of a fact, which means "June is the mother of Theodore":
 //!
-//!```bash
-//! mother(June, Theodore).
-//!```
+//! <pre>mother(June, Theodore).</pre>
 //!
 //! Here we see the main difference between Suiron and Prolog.
-//! In Prolog, lower case words are 'atoms' (that is, string constants) and upper case words are variables.
-//! In Suiron, atoms can be lower case or upper case. Thus 'mother', 'June' and 'Theodore' are all atoms.
-//! Suiron's atoms can even contain spaces.
+//! In Prolog, lower case words are 'atoms' (that is, string constants) and upper case
+//! words are variables. In Suiron, atoms can be lower case or upper case. Thus 'mother',
+//! 'June' and 'Theodore' are all atoms. Suiron's atoms can even contain spaces.
 //!
-//!```bash
-//! mother(June, The Beaver).
-//!```
+//! <pre>mother(June, The Beaver).</pre>
 //!
 //! Suiron's variables are defined by putting a dollar sign in front of the variable name,
 //! for example, $Child. A query to determine June's children would be written:
 //!
-//!```bash
-//! mother(June, $Child).
-//!```
-//!
-//! Please refer to [LogicVar](../suiron/unifiable/enum.Unifiable.html#variant.LogicVar).
+//! <pre>mother(June, $Child).</pre>
 //!
 //! The anonymous variable must also begin with a dollar sign: $\_ .
 //! A simple underscore '\_' is treated as an atom.
 //! Below is an example of a rule which contains an anonymous variable:
 //!
-//!```bash
-//! voter($P) :- $P = person($_, $Age), $Age >= 18.
-//!```
+//! <pre>voter($P) :- $P = person($_, $Age), $Age >= 18.</pre>
 //!
-//!<hr>
+//! <br><hr><br>
 //!
 //! Facts and rules can also be created dynamically within a Rust application program.
 //! The fact mother(June, Theodore) could be created by calling the function parse_complex().
 //!
-//!```bash
-//! let fact = parse_complex("mother(June, Theodore).");
-//!```
+//! <pre>let fact = parse_complex("mother(June, Theodore).");</pre>
 //!
-//! Please refer to [SComplex](../suiron/unifiable/enum.Unifiable.html#variant.SComplex).
+//! The query mother(June, $Child) could be created in Rust source as follows:
 //!
-//! The query mother(June, $Child) could be created in Go as follows:
+//! <pre>
+//! let mother = atom!("mother");
+//! let june   = atom!("June");
+//! let child  = logic_var!("$Child");
+//! let query  = query!(mother, june, child);</pre>
 //!
-//!```bash
-//! let mother = Atom("mother");
-//! let June   = Atom("June");
-//! let child  = LogicVar("$Child");
-//! let query  = MakeGoal(mother, June, child);
-//!```
+//! Suiron also supports integer and floating point numbers, which are
+//! implemented as 64-bit ints and floats.
 //!
-//! Please refer to [variable.rs](suiron/variable.rs) and [goal.rs](suiron/goal.rs) for more details.
+//! <pre>
+//! let pi = SFloat(3.14159);
+//! let year = SInteger(2023);</pre>
 //!
-//! Suiron also supports integer and floating point numbers, which are implemented as 64-bit ints and floats.
-//! These are parsed by Go's strconv package:
-//!
-//!```bash
-//!    f, err := strconv.ParseFloat(str, 64)
-//!    i, err := strconv.ParseInt(str, 10, 64)
-//!```
-//!
-//! If a Float and an Integer are compared, the Integer will be converted to a Float for the comparison.
-//!
-//! Please refer to [constants.rs](suiron/constants.rs).
+//! If a float and an integer are compared, the integer will be converted to
+//! a float for the comparison.
 //!
 //! Of course, Suiron supports linked lists, which work the same way as Prolog lists.
-//! A linked list can be loaded from a file:
+//! A linked list can be loaded from a source file:
 //!
-//!```bash
-//!   ..., [a, b, c, d] = [$Head | $Tail], ...
-//!```
+//! <pre>
+//!   …, [a, b, c, d] = [$Head | $Tail], …</pre>
 //!
-//! or created dynamically:
+//! or created dynamically in Rust:
 //!
-//!```bash
-//! let X = ParseLinkedList("[a, b, c, d]");
-//! let Y = MakeLinkedList(true, $Head, $Tail);
-//!```
-//!
-//! Please refer to [linkedlist.rs](suiron/linkedlist.rs).
+//! <pre>
+//! let list1 = parse_linked_list("[a, b, c | $X]");
+//! let list2 = make_linked_list(false, terms);</pre>
 //!
 //! ## Requirements
 //!
@@ -105,102 +82,79 @@
 //!
 //! To clone the repository, run the following command in a terminal window:
 //!
-//!```bash
-//! git clone git@github.com:Indrikoterio/suiron-rust.git
-//!```
+//! <pre>
+//! git clone git@github.com:Indrikoterio/suiron-rust.git</pre>
 //!
-//!The repository has three folders:
+//! The repository has the following subfolders:
 //!
-//!```bash
-//! suiron/suiron
-//! suiron/test
-//! suiron/demo
-//!```
+//! - suiron-rust/benches
+//! - suiron-rust/src
+//! - suiron-rust/suiron_demo
+//! - suiron-rust/target
+//! - suiron-rust/tests
 //!
-//! The code for the inference engine itself is in the subfolder /suiron.
+//! The source code for Suiron itself is under /src.
 //!
-//! The subfolder /test contains Go programs which test the basic functionality of Suiron.
+//! The subfolder /tests has programs which test the basic functionality of the
+//! inference engine. Tests can be run by opening a command line interface, moving
+//! to the suiron-rust folder and running the following command.
 //!
-//! The subfolder /demo contains a simple demo program which parses English sentences.
+//! <pre>cargo test</pre>
+//!
+//! The program under /benches (suiron_benchmark.rs) uses the Criterion crate
+//! to run a qsort algorithm. On a MacBook Pro, with a 2.8 GHz dual core Intel Core i5
+//! processor, this benchmark runs in about 32 milliseconds. The program
+//! can be run with the command `cargo bench`.
+//!
+//! The subfolder /suiron_demo contains a simple demo program which parses
+//! English sentences. If you intend to incorporate Suiron into your own project,
+//! this is a good reference.<br>
+//! See: [Suiron Demo](../../../suiron_demo/target/doc/suiron_demo/index.html)
+//!
+//! The /target folder holds build results.
 //!
 //! ## Usage
 //!
-//! In the top folder is a program called 'query', which loads facts and rules
+//! The crate `query` uses `suiron` library crate to loads facts and rules
 //! from a file, and allows the user to query the knowledge base.
 //! Query can be run in a terminal window as follows:
 //!
-//!```bash
-//! ./query test/kings.txt
-//!```
+//! <pre>
+//! cargo run -- test/kings.txt</pre>
 //!
 //! The user will be prompted for a query with this prompt: ?-
 //!
 //! The query below will print out all father/child relationships.
 //!
-//!```bash
-//! ?- father($F, $C).
-//!```
+//! <pre>
+//! ?- father($F, $C).</pre>
 //!
 //! After typing enter, the program will print out solutions, one after each press
-//! of Enter, until there are no more solutions, as indicated by 'No'.
+//! of Enter, until there are no more solutions.
 //!
-//!```bash
-//! ./query. test/kings.txt
+//! <pre>
+//! cargo run -- test/kings.txt
 //! ?- father($F, $C).
 //! $F = Godwin, $C = Harold II
 //! $F = Godwin, $C = Tostig
 //! $F = Godwin, $C = Edith
 //! $F = Tostig, $C = Skule
 //! $F = Harold II, $C = Harold
-//! No
-//! ?-
-//!```
+//! No more.
+//! ?- </pre>
 //!
-//! To use Suiron in your own project, copy the subfolder 'suiron' to your project
-//! folder. You will have to include:
+//! Suiron doesn't have a lot of built-in predicates, but it does have:
 //!
-//!```bash
-//! import (
-//!    . "github.com/indrikoterio/suiron/suiron"
-//! )
-//!```
-//!
-//! in your source file.
-//!
-//! The program [parse_demo.go](demo/parse_demo.go) demonstrates how to set up
-//! a knowledge base and make queries.
-//! If you intend to incorporate Suiron into your own project, this is a good
-//! reference. There are detailed comments in the header.
-//!
-//! To run parse_demo, move to the demo folder and execute the batch file 'run'.
-//!
-//!```bash
-//! cd demo
-//! ./run
-//!```
-//!
-//! Suiron doesn't have a lot of built-in predicates, but it does have: [append.go](suiron/append.go),
-//! [functor.go](suiron/functor.go), [print.go](suiron/print.go), [new_line.go](suiron/new_line.go),
-//! [include.go](suiron/include.go), [exclude.go](suiron/exclude.go), greater_than (etc.)
-//!
-//! ...and some arithmetic functions: [add.go](suiron/add.go), [subtract.go](suiron/subtract.go),
-//! [multiply.go](suiron/multiply.go), [divide.go](suiron/divide.go)
+//! - append
+//! - functor
+//! - print
+//! - print_list
+//! - nl (new line)
+//! - include, exclude
+//! - greater_than, less_than, etc.
+//! - arithmatic functions: +, -, *, /
 //!
 //! Please refer to the test programs for examples of how to use these.
-//!
-//! To run the tests, open a terminal window, go to the test folder, and execute 'run'.
-//!
-//!```bash
-//! cd test
-//! ./run
-//!```
-//!
-//! Suiron allows you to write your own built-in predicates and functions.
-//! The files [bip_template.go](suiron/bip_template.go) and [bif_template.go](suiron/bif_template.go)
-//! can be used as templates. Please read the comments in the headers of these files.
-//!
-//! The files [hyphenate.go](test/hyphenate.go) and [capitalize.go](test/capitalize.go) in the test
-//! directory can also be used for reference.
 //!
 //! ## Developer
 //!
@@ -213,7 +167,7 @@
 //!
 //! ## History
 //!
-//! First release, April 2023.
+//! First release, May 2023.
 //!
 //! ## Reference
 //!
