@@ -1,7 +1,7 @@
-//! This crate demonstrates the use of the Suiron library crate.
+//! Query demonstrates the use of the Suiron library crate.
 //!
-//! Suiron implements a source code parser, a knowledge base, and an inference engine.<br>
-//! Query uses Suiron to load a program and evaluate queries to the knowledge base.
+//! The suiron crate implements a source code parser, a knowledge base, and an inference engine.<br>
+//! Query uses suiron to load a logic program and evaluate queries to the knowledge base.
 //!
 use std::env;
 use std::rc::Rc;
