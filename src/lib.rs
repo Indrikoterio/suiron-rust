@@ -10,12 +10,13 @@
 //! &nbsp; &nbsp; [Logic Programming](http://athena.ecs.csus.edu/~mei/logicp/prolog.html)<br>
 //! &nbsp; &nbsp; [cse341](https://courses.cs.washington.edu/courses/cse341/12au/prolog/basics.html)
 //!
-//! There is an online test site and tutorial for Suiron at:
+//! There is an online tutorial and test site for Suiron at:
 //! [klivo.net/suiron](https://klivo.net/suiron)
 //!
 //! ## Briefly
 //!
 //! An inference engines analyzes facts and rules which are stored in a knowledge base.
+//!
 //! Suiron has a parser which loads these facts and rules from a text-format source file.
 //!
 //! Below is an example of a fact, which means "June is the mother of Theodore":
@@ -24,8 +25,8 @@
 //!
 //! Here we see the main difference between Suiron and Prolog.
 //! In Prolog, lower case words are `atoms` (that is, string constants) and upper case
-//! words are variables. In Suiron, atoms can be lower case or upper case. Thus 'mother',
-//! 'June' and 'Theodore' are all atoms. Suiron's atoms can even contain spaces.
+//! words are variables. In Suiron, atoms can be lower case or upper case. Thus `mother`,
+//! `June` and `Theodore` are all atoms. Suiron's atoms can even contain spaces.
 //!
 //! <pre>mother(June, The Beaver).</pre>
 //!
@@ -43,9 +44,12 @@
 //! <br><hr><br>
 //!
 //! Facts and rules can also be created dynamically within a Rust application program.
-//! The fact mother(June,&nbsp;Theodore) could be created by calling the function parse_complex().
+//! The fact mother(June,&nbsp;Theodore) could be created by calling the functions
+//! parse_complex() and make_fact().
 //!
-//! <pre>let fact = parse_complex("mother(June, Theodore).");</pre>
+//! <pre>
+//! let term = parse_complex("mother(June, Theodore).");
+//! let fact = make_fact(term);</pre>
 //!
 //! The query mother(June, $Child) could be created in Rust source as follows:
 //!
@@ -134,8 +138,8 @@
 //! <pre>
 //! ?- father($F, $C).</pre>
 //!
-//! After typing enter, the program will print out solutions, one after each press
-//! of &lt;enter&gt;, until there are no more solutions.
+//! After typing &lt;enter&gt;, the program will print out solutions,
+//! one after each press of &lt;enter&gt;, until there are no more solutions.
 //!
 //! <pre>
 //! cargo run -- test/kings.txt
