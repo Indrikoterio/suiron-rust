@@ -29,7 +29,7 @@ path = "src/lib.rs"
 thread_timer = "0.3.0"
 
 [dev-dependencies]
-serial_test = "*"
+serial_test = "0.4.0"
 criterion = "0.3"
 
 [[bench]]
