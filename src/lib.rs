@@ -161,7 +161,7 @@
 //! - nl (new line)
 //! - include, exclude
 //! - greater_than, less_than, etc.
-//! - arithmatic functions: +, -, *, /
+//! - arithmetic functions: +, -, *, /
 //!
 //! Please refer to the test programs for examples of how to use these.
 //!
